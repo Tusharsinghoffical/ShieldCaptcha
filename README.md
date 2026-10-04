@@ -1,123 +1,230 @@
-# 🛡️ ShieldCaptcha Enterprise v4.0 (Unified Dual-Defense Engine)
+# ShieldCaptcha Enterprise
 
-> **Ultra-Secure, Frictionless Bot Defense & Authorization Engine**  
-> Combines seamless **1-Click Proof-of-Work (Turnstile style)** with an **Anti-Computer-Vision Interlocking Jigsaw Slider (Arkose style)** and automated **Step-Up Threat Escalation**.
+ShieldCaptcha is a self-hostable, zero-cookie human verification and bot defense platform combining client-side Proof-of-Work, biometric kinematics, and cryptographic token verification.
 
----
+## Table of Contents
 
-## ⚡ Highlights
+- [Key Features](#key-features)
+- [Quick Start](#quick-start)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [Project Structure](#project-structure)
+- [Development](#development)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
+- [Security](#security)
+- [License](#license)
 
-* **Zero External Dependencies:** Built entirely with Node.js built-ins (`http`, `crypto`, `fs`, `zlib`). No external npm packages required!
-* **Dual Defense Architecture:**
-  1. **1-Click Turnstile Mode:** Instant 18ms human approval via background SHA-256 Web Worker Proof-of-Work and ambient pointer entropy.
-  2. **Magnetic Jigsaw Slider Mode:** Anti-CV procedural image synthesis with high-contrast glowing socket cutout, generous magnetic snap tolerance (`±24px`), and Flash & Hogan minimum-jerk kinematics.
-  3. **Adaptive Step-Up Mode:** Real humans click once to pass. If headless browsers or automation scripts attack, the system seamlessly escalates to the visual puzzle!
-* **Enterprise Authorization:** Cryptographically signed HMAC-SHA256 tokens with atomic single-use (`jti`) consumption and IP binding.
-* **Dual Backend Support:** Production-ready **Node.js** engine + synchronized **Python (FastAPI)** engine.
+## Key Features
 
----
+- **Multi-Modal Verification**: Supports 1-Click Proof-of-Work checkbox, interactive jigsaw puzzle slider, and automated risk-based step-up escalation.
+- **Client-Side Proof-of-Work**: Computes leading-zero SHA-256 challenges inside a Web Worker without third-party tracking cookies.
+- **Biomechanical Kinematics**: Evaluates pointer trajectory derivatives and micro-tremor consistency to detect programmatic automation.
+- **Cryptographic Authorization**: Issues single-use HMAC-SHA256 verification tokens with atomic replay protection.
+- **Dual Engine Architecture**: Offers a zero-dependency Node.js core backend alongside a synchronized Python FastAPI service.
+- **Built-in Developer Portal**: Next.js 16 dashboard providing real-time telemetry, interactive trial sandbox, attack simulator, and API key management.
 
-## 📂 Enterprise Project Structure
+## Quick Start
 
-```
-ShieldCaptcha/
-├── 📁 frontend/                 # ⚡ Next.js 16 + TypeScript + Tailwind v4 Developer Portal
-│   ├── src/
-│   │   ├── app/                # App Router (page.tsx, layout.tsx, /api/* proxy)
-│   │   ├── components/         # Modern UI (Oscilloscope, Bot Lab, Integration Hub, etc.)
-│   │   └── lib/                # Backend proxy & utilities
-│   ├── public/                 # Static assets (logo.png)
-│   └── package.json            # Next.js, Framer Motion, Lucide, Canvas Confetti
-│
-├── 📁 backend-node/             # 🛡️ High-Performance Node.js Core Enterprise Engine
-│   ├── server.js               # Zero-dependency HTTP/crypto/zlib CAPTCHA engine
-│   ├── package.json            # Node backend scripts
-│   └── public/                 # Standalone static portal & client assets (index.html, logo.png)
-│
-├── 📁 backend-python/           # 🐍 Synchronized Python (FastAPI) Backend Engine
-│   ├── captcha_server.py       # FastAPI high-speed verification engine
-│   └── requirements.txt        # Minimal dependencies (fastapi, uvicorn)
-│
-├── 📁 sdk/                      # 📦 Client SDK & Embed Kit
-│   ├── captcha.js              # Universal client SDK (works in any vanilla/React/Vue app)
-│   ├── demo.html               # 1-File minimal drop-in verification demo
-│   └── logo.png                # Official high-resolution glowing shield emblem
-│
-├── 📁 docs/                     # 📚 Enterprise Documentation & References
-│   ├── INTEGRATION_GUIDE.md    # Multi-language integration guides (HTML, React, Node, Python, PHP, Go)
-│   └── API_REFERENCE.md        # Complete REST API specifications & cryptographic details
-│
-├── 🚀 start-all.bat             # 🌟 1-Click Master Launcher (starts Backend & Frontend, opens browser)
-├── ⚙️ start-backend-node.bat    # 1-Click Node.js engine launcher (:3000)
-├── ⚙️ start-backend-python.bat  # 1-Click Python FastAPI engine launcher (:8000)
-├── ⚙️ start-frontend.bat        # 1-Click Next.js frontend launcher (:3001)
-├── 📦 package.json              # Monorepo root scripts (`npm run dev`, `npm run build`)
-└── 📄 README.md                 # Master project documentation
-```
+Run the following commands from the repository root:
 
----
-
-## 🚀 Quickstart (How to Run)
-
-### 🌟 Option 1: 1-Click Master Launcher (Recommended)
-Simply double-click:
-```cmd
-start-all.bat
-```
-This automatically boots the **Node.js Engine** (:3000), starts the **Next.js 16 Portal** (:3001), and opens your default browser directly to `http://localhost:3001`!
-
----
-
-### 💻 Option 2: Terminal / NPM Monorepo Scripts
-
-#### Run Both Frontend & Backend:
 ```bash
-# Terminal 1: Start Backend Engine (Port 3000)
+npm install
 npm run dev:backend
+```
 
-# Terminal 2: Start Next.js 16 Frontend (Port 3001)
+In a second terminal, start the Next.js developer portal:
+
+```bash
 npm run dev
 ```
 
-Open your browser:
-* 🌐 **Frontend Enterprise Portal:** [http://localhost:3001](http://localhost:3001)
-* ⚡ **Node.js Backend Engine:** [http://localhost:3000](http://localhost:3000)
-* 🧩 **Minimal 1-File Embed Demo:** [http://localhost:3000/demo.html](http://localhost:3000/demo.html)
+Access the interfaces in your browser:
+- Developer Portal: `http://localhost:3001`
+- Core Engine API: `http://localhost:3000`
 
----
+## Prerequisites
 
-### 🐍 Option 3: Python (FastAPI) Engine
-Double-click `start-backend-python.bat` or run:
+- **Node.js**: `>= 18.18.0` (tested on Node.js v20)
+- **npm**: `>= 9.0.0`
+- **Python** (optional, for FastAPI backend): `>= 3.10`
+
+## Installation
+
+### 1. Monorepo Setup (Node.js & Next.js)
+
+Clone the repository and install root and frontend dependencies:
+
+```bash
+git clone https://github.com/Tusharsinghoffical/ShieldCaptcha.git
+cd ShieldCaptcha
+npm install
+```
+
+### 2. Python Backend Setup (Optional)
+
+If running the Python engine instead of the Node.js core:
+
 ```bash
 cd backend-python
 pip install -r requirements.txt
-python -m uvicorn captcha_server:app --port 8000 --reload
 ```
 
----
+## Configuration
 
-## 🎯 How to Test the Live Trial
+Configure the platform using environment variables. When running locally without variables, default development values are generated automatically.
 
-1. Open **`http://localhost:3000`** in any browser.
-2. **Test 1-Click Turnstile:** Click "Verify you are human". It runs background bit-level SHA-256 PoW in a Web Worker and confirms with a green checkmark instantly!
-3. **Test Magnetic Jigsaw Puzzle:** Switch to the "🧩 Jigsaw (Magnetic)" pill. Slide the knob towards the glowing cutout slot. It aligns smoothly with generous tolerance!
-4. **Test Attack Simulator:** Switch to the "Attack Simulator" tab on the right and launch simulated attacks (Linear Script, Teleport, Synthetic Bezier, Headless Chrome) to watch the engine block each exploit with live audit reasons.
-5. **Add to Your Project:** Scroll to the "Add to Your Project" section to copy-paste ready-to-run frontend and backend code in your preferred language.
+| Variable | Required | Description | Example Placeholder |
+|---|---|---|---|
+| `PORT` | No | HTTP port for the Node.js backend (default: `3000`). | `3000` |
+| `SITE_KEY` | No | Public site identifier key for client widgets. | `pub_shield_live_example12345678` |
+| `SITE_SECRET` | No | Secret key used by application servers to verify tokens. | `sec_shield_live_example12345678` |
+| `CAPTCHA_SECRET` | No | Cryptographic HMAC secret for signing verification tokens. | `your-captcha-secret-key-here` |
+| `CAPTCHA_BACKEND_URL` | No | Upstream engine URL when proxying from Next.js. | `http://localhost:3000` |
+| `HEALTH_CHECK_SECRET` | No | Secret token to unlock deep diagnostic metrics on `/api/health`. | `your-health-secret-key-here` |
+| `TRUST_PROXY` | No | Set to `true` when operating behind a reverse proxy (e.g., NGINX). | `true` |
 
----
+## Usage
 
-## 🔑 Environment Configuration
+### 1. Frontend Integration
 
-You can customize secret keys and ports via environment variables:
+Include the standalone client script and mount the widget container in your HTML form:
 
-| Variable | Default | Purpose |
-|---|---|---|
-| `PORT` | `3000` | HTTP listen port |
-| `SITE_KEY` | Auto-generated | Public client identifier |
-| `SITE_SECRET` | Auto-generated | Private key for `/api/siteverify` |
-| `CAPTCHA_SECRET`| Auto-generated | HMAC key for signing tokens |
+```html
+<form id="login-form">
+  <input type="email" name="email" required />
+  <div id="captcha-container"></div>
+  <button type="submit" id="submit-btn" disabled>Sign In</button>
+</form>
 
----
+<script src="http://localhost:3000/captcha.js"></script>
+<script>
+  let captchaToken = '';
 
-## 📄 License
-MIT License. Free for enterprise and personal integration.
+  ShieldCaptcha.mount(document.getElementById('captcha-container'), {
+    mode: 'checkbox',
+    onToken: (token) => {
+      captchaToken = token;
+      document.getElementById('submit-btn').disabled = false;
+    },
+    onReset: () => {
+      captchaToken = '';
+      document.getElementById('submit-btn').disabled = true;
+    }
+  });
+</script>
+```
+
+### 2. Server-Side Verification
+
+Verify the received single-use token against the verification endpoint:
+
+```bash
+curl -X POST http://localhost:3000/api/v1/siteverify \
+  -H "Content-Type: application/json" \
+  -H "X-Site-Secret: sec_shield_live_example12345678" \
+  -d '{"token": "your-verification-token", "ip": "192.0.2.1"}'
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "challenge_ts": "2026-10-04T12:00:00.000Z",
+  "score": 95,
+  "mode": "checkbox_pow",
+  "authorized": true
+}
+```
+
+Detailed endpoints and parameters are documented in [docs/API_REFERENCE.md](docs/API_REFERENCE.md).
+
+## Project Structure
+
+```
+ShieldCaptcha/
+├── backend-node/    # Zero-dependency Node.js HTTP/crypto core defense engine
+├── backend-python/  # Synchronized FastAPI Python verification engine
+├── docs/            # REST API specifications and integration guides
+├── frontend/        # Next.js 16, TypeScript, and Tailwind CSS developer portal
+├── sdk/             # Standalone universal client library and embed assets
+├── package.json     # Monorepo scripts and workspace configuration
+└── vercel.json      # Production deployment configuration for Vercel
+```
+
+## Development
+
+Available scripts defined in `package.json`:
+
+| Command | Action |
+|---|---|
+| `npm run dev` | Start the Next.js developer portal on `http://localhost:3001` |
+| `npm run dev:backend` | Start the Node.js engine with `--watch` on `http://localhost:3000` |
+| `npm run build` | Compile the Next.js production bundle |
+| `npm run start` | Serve the Next.js production build |
+| `npm run start:backend` | Start the Node.js engine in production mode |
+
+To execute the TypeScript build check:
+
+```bash
+npm run build
+```
+
+To run linter checks on the frontend:
+
+```bash
+npm --prefix frontend run lint
+```
+
+## Deployment
+
+### Vercel (Serverless)
+
+The repository includes [vercel.json](vercel.json) preconfigured for Next.js. The frontend includes a built-in serverless execution layer that operates independently or proxies to a dedicated backend when `CAPTCHA_BACKEND_URL` is set.
+
+1. Import the repository into Vercel.
+2. Keep the root directory as `./` or set to `frontend`.
+3. Configure optional environment variables (`CAPTCHA_SECRET`, `HEALTH_CHECK_SECRET`).
+4. Trigger the deployment.
+
+### Standalone Node.js Server
+
+Run the core engine directly on any Linux/Unix/Windows server:
+
+```bash
+cd backend-node
+PORT=3000 node server.js
+```
+
+### Health Check
+
+Verify service availability via the health check endpoint:
+
+```bash
+curl http://localhost:3000/api/health
+```
+
+To view extended diagnostics, supply the configured secret:
+
+```bash
+curl "http://localhost:3000/api/health?key=your-health-secret-key-here&deep=true"
+```
+
+## Contributing
+
+1. Fork the repository and create a new feature branch (`git checkout -b feature/defense-layer`).
+2. Implement your changes and verify that `npm run build` passes with zero errors.
+3. Submit a pull request detailing the changes and verification steps.
+
+## Security
+
+Do not report security vulnerabilities through public GitHub issues.
+
+Report security concerns privately to `security@example.com` <!-- TODO: verify security contact email --> with reproducible details.
+
+## License
+
+This project is licensed under the MIT License as declared in [package.json](package.json).
