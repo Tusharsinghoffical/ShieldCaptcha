@@ -1,10 +1,19 @@
-# ShieldCaptcha Enterprise
+<p align="center">
+  <img src="assets/logo.png" width="120" height="120" alt="ShieldCaptcha Logo" />
+</p>
+
+<h1 align="center">ShieldCaptcha Enterprise</h1>
+
+<p align="center">
+  <strong>Self-hostable, zero-cookie human verification and bot defense platform</strong>
+</p>
 
 ShieldCaptcha is a self-hostable, zero-cookie human verification and bot defense platform combining client-side Proof-of-Work, biometric kinematics, and cryptographic token verification.
 
 ## Table of Contents
 
 - [Key Features](#key-features)
+- [Architecture](#architecture)
 - [Quick Start](#quick-start)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
@@ -26,6 +35,18 @@ ShieldCaptcha is a self-hostable, zero-cookie human verification and bot defense
 - **Dual Engine Architecture**: Offers a zero-dependency Node.js core backend alongside a synchronized Python FastAPI service.
 - **Built-in Developer Portal**: Next.js 16 dashboard providing real-time telemetry, interactive trial sandbox, attack simulator, and API key management.
 
+## Architecture
+
+<p align="center">
+  <img src="assets/architecture-diagram.svg" width="100%" alt="ShieldCaptcha Architecture Diagram" />
+</p>
+
+ShieldCaptcha operates through an integrated four-stage pipeline:
+1. **Client Trigger**: Form mounts the lightweight universal widget and computes a dynamic leading-zero SHA-256 challenge in a background Web Worker.
+2. **Kinematic Analysis**: Pointer coordinates, micro-tremor biological harmonics, and browser environment signals are captured and encrypted client-side using AES-CBC-128.
+3. **Engine Vault**: The engine decrypts payloads using PBKDF2-derived session keys, validates trajectory physics against anti-replay hashes, and signs an HMAC-SHA256 authorization token.
+4. **Siteverify Gateway**: Your application backend calls `/api/v1/siteverify` to atomically consume the single-use token and authorize the request.
+
 ## Quick Start
 
 Run the following commands from the repository root:
@@ -44,6 +65,12 @@ npm run dev
 Access the interfaces in your browser:
 - Developer Portal: `http://localhost:3001`
 - Core Engine API: `http://localhost:3000`
+
+Windows users can also launch both services in a single step using:
+
+```cmd
+start-all.bat
+```
 
 ## Prerequisites
 
@@ -146,12 +173,14 @@ Detailed endpoints and parameters are documented in [docs/API_REFERENCE.md](docs
 
 ```
 ShieldCaptcha/
+├── assets/          # Project visual assets, logo, and architecture diagram
 ├── backend-node/    # Zero-dependency Node.js HTTP/crypto core defense engine
 ├── backend-python/  # Synchronized FastAPI Python verification engine
 ├── docs/            # REST API specifications and integration guides
 ├── frontend/        # Next.js 16, TypeScript, and Tailwind CSS developer portal
 ├── sdk/             # Standalone universal client library and embed assets
 ├── package.json     # Monorepo scripts and workspace configuration
+├── start-all.bat    # Windows 1-click master launcher
 └── vercel.json      # Production deployment configuration for Vercel
 ```
 

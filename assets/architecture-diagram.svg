@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 340" width="960" height="340" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <defs>
+    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="amberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#6d28d9"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.04"/>
+    </filter>
+  </defs>
+
+  <!-- Canvas Subtle Grid Lines -->
+  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#f1f5f9" stroke-width="1"/>
+  </pattern>
+  <rect width="960" height="340" fill="url(#grid)"/>
+
+  <!-- Top Title Banner -->
+  <g transform="translate(40, 28)">
+    <rect x="0" y="0" width="12" height="12" rx="3" fill="#4f46e5"/>
+    <text x="22" y="11" font-size="13" font-weight="700" fill="#0f172a" letter-spacing="0.5">SHIELDCAPTCHA DUAL-DEFENSE VERIFICATION ARCHITECTURE</text>
+    <text x="760" y="11" font-size="11" font-weight="600" fill="#64748b" text-anchor="end">RFC 7519 COMPLIANT &bull; ZERO COOKIES</text>
+    <line x1="0" y1="22" x2="880" y2="22" stroke="#e2e8f0" stroke-width="1"/>
+  </g>
+
+  <!-- Step 1: Client Challenge -->
+  <g transform="translate(40, 75)" filter="url(#cardShadow)">
+    <rect width="195" height="225" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="1" y="1" width="193" height="4" rx="2" fill="url(#primaryGrad)"/>
+    <rect x="16" y="18" width="28" height="28" rx="7" fill="#e0e7ff"/>
+    <text x="30" y="37" font-size="13" font-weight="800" fill="#4f46e5" text-anchor="middle">1</text>
+    <text x="52" y="36" font-size="13" font-weight="700" fill="#0f172a">Client Trigger</text>
+    
+    <rect x="16" y="58" width="163" height="46" rx="8" fill="#f8fafc" stroke="#f1f5f9"/>
+    <text x="24" y="74" font-size="11" font-weight="700" fill="#1e293b">1-Click / Jigsaw</text>
+    <text x="24" y="90" font-size="10" fill="#64748b">Mounts in form</text>
+
+    <rect x="16" y="112" width="163" height="46" rx="8" fill="#f8fafc" stroke="#f1f5f9"/>
+    <text x="24" y="128" font-size="11" font-weight="700" fill="#1e293b">SHA-256 Worker</text>
+    <text x="24" y="144" font-size="10" fill="#64748b">16-bit Proof-of-Work</text>
+
+    <rect x="16" y="166" width="163" height="46" rx="8" fill="#f8fafc" stroke="#f1f5f9"/>
+    <text x="24" y="182" font-size="11" font-weight="700" fill="#1e293b">Zero Cookies</text>
+    <text x="24" y="198" font-size="10" fill="#64748b">No tracking data</text>
+  </g>
+
+  <!-- Arrow 1 -> 2 -->
+  <path d="M 245 187 L 265 187" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round"/>
+  <polygon points="265,183 273,187 265,191" fill="#94a3b8"/>
+
+  <!-- Step 2: Biomechanical Sensor -->
+  <g transform="translate(280, 75)" filter="url(#cardShadow)">
+    <rect width="195" height="225" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="1" y="1" width="193" height="4" rx="2" fill="url(#amberGrad)"/>
+    <rect x="16" y="18" width="28" height="28" rx="7" fill="#fef3c7"/>
+    <text x="30" y="37" font-size="13" font-weight="800" fill="#d97706" text-anchor="middle">2</text>
+    <text x="52" y="36" font-size="13" font-weight="700" fill="#0f172a">Kinematics</text>
+
+    <rect x="16" y="58" width="163" height="46" rx="8" fill="#f8fafc" stroke="#f1f5f9"/>
+    <text x="24" y="74" font-size="11" font-weight="700" fill="#1e293b">Flash &amp; Hogan</text>
+    <text x="24" y="90" font-size="10" fill="#64748b">Minimum jerk curve</text>
+
+    <rect x="16" y="112" width="163" height="46" rx="8" fill="#f8fafc" stroke="#f1f5f9"/>
+    <text x="24" y="128" font-size="11" font-weight="700" fill="#1e293b">Micro-Tremor</text>
+    <text x="24" y="144" font-size="10" fill="#64748b">Biological harmonics</text>
+
+    <rect x="16" y="166" width="163" height="46" rx="8" fill="#f8fafc" stroke="#f1f5f9"/>
+    <text x="24" y="182" font-size="11" font-weight="700" fill="#1e293b">Hardware Audit</text>
+    <text x="24" y="198" font-size="10" fill="#64748b">CDP &amp; WebDriver flags</text>
+  </g>
+
+  <!-- Arrow 2 -> 3 -->
+  <path d="M 485 187 L 505 187" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round"/>
+  <polygon points="505,183 513,187 505,191" fill="#94a3b8"/>
+
+  <!-- Step 3: Engine Vault -->
+  <g transform="translate(520, 75)" filter="url(#cardShadow)">
+    <rect width="195" height="225" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="1" y="1" width="193" height="4" rx="2" fill="url(#purpleGrad)"/>
+    <rect x="16" y="18" width="28" height="28" rx="7" fill="#f3e8ff"/>
+    <text x="30" y="37" font-size="13" font-weight="800" fill="#7c3aed" text-anchor="middle">3</text>
+    <text x="52" y="36" font-size="13" font-weight="700" fill="#0f172a">Engine Vault</text>
+
+    <rect x="16" y="58" width="163" height="46" rx="8" fill="#f8fafc" stroke="#f1f5f9"/>
+    <text x="24" y="74" font-size="11" font-weight="700" fill="#1e293b">AES-128 Decrypt</text>
+    <text x="24" y="90" font-size="10" fill="#64748b">PBKDF2-derived salt</text>
+
+    <rect x="16" y="112" width="163" height="46" rx="8" fill="#f8fafc" stroke="#f1f5f9"/>
+    <text x="24" y="128" font-size="11" font-weight="700" fill="#1e293b">Anti-Replay</text>
+    <text x="24" y="144" font-size="10" fill="#64748b">SHA-256 trail hashes</text>
+
+    <rect x="16" y="166" width="163" height="46" rx="8" fill="#f8fafc" stroke="#f1f5f9"/>
+    <text x="24" y="182" font-size="11" font-weight="700" fill="#1e293b">HMAC-SHA256</text>
+    <text x="24" y="198" font-size="10" fill="#64748b">Signs single-use token</text>
+  </g>
+
+  <!-- Arrow 3 -> 4 -->
+  <path d="M 725 187 L 745 187" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round"/>
+  <polygon points="745,183 753,187 745,191" fill="#94a3b8"/>
+
+  <!-- Step 4: Verification Gateway -->
+  <g transform="translate(760, 75)" filter="url(#cardShadow)">
+    <rect width="160" height="225" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="1" y="1" width="158" height="4" rx="2" fill="url(#emeraldGrad)"/>
+    <rect x="16" y="18" width="28" height="28" rx="7" fill="#d1fae5"/>
+    <text x="30" y="37" font-size="13" font-weight="800" fill="#059669" text-anchor="middle">4</text>
+    <text x="52" y="36" font-size="13" font-weight="700" fill="#0f172a">Siteverify</text>
+
+    <rect x="16" y="58" width="128" height="46" rx="8" fill="#f8fafc" stroke="#f1f5f9"/>
+    <text x="24" y="74" font-size="11" font-weight="700" fill="#1e293b">/siteverify</text>
+    <text x="24" y="90" font-size="10" fill="#64748b">Server API call</text>
+
+    <rect x="16" y="112" width="128" height="46" rx="8" fill="#f8fafc" stroke="#f1f5f9"/>
+    <text x="24" y="128" font-size="11" font-weight="700" fill="#1e293b">Single-Use JTI</text>
+    <text x="24" y="144" font-size="10" fill="#64748b">Atomic consume</text>
+
+    <rect x="16" y="166" width="128" height="46" rx="8" fill="#ecfdf5" stroke="#a7f3d0"/>
+    <text x="24" y="182" font-size="11" font-weight="700" fill="#059669">200 Authorized</text>
+    <text x="24" y="198" font-size="10" fill="#047857">Human passed</text>
+  </g>
+</svg>

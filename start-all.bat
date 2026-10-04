@@ -3,7 +3,7 @@ title ShieldCaptcha Enterprise - Launcher
 cd /d "%~dp0"
 
 echo =========================================================
-echo 🛡️  Launching ShieldCaptcha Enterprise Ecosystem...
+echo [LAUNCH] Starting ShieldCaptcha Enterprise Ecosystem...
 echo =========================================================
 echo [1/2] Starting Node.js Engine on http://localhost:3000...
 start "ShieldCaptcha - Node.js Backend (:3000)" cmd /k "cd /d "%~dp0\backend-node" && node server.js"
@@ -18,7 +18,7 @@ echo Opening browser at http://localhost:3001...
 start http://localhost:3001
 
 echo =========================================================
-echo ✓ ShieldCaptcha is now running!
+echo [READY] ShieldCaptcha is now running!
 echo - Frontend Portal: http://localhost:3001
 echo - Backend Engine:   http://localhost:3000
 echo =========================================================
