@@ -1,184 +1,222 @@
-# ShieldCaptcha Enterprise v4.0 — API Reference
+# ShieldCaptcha Enterprise v4.2 — Developer REST API Reference
 
-All requests and responses use `application/json; charset=utf-8`.
+ShieldCaptcha provides an enterprise-grade REST API for bot defense, human verification, multi-tenant API key management, and server-to-server token validation.
 
----
-
-## 1. Challenge Generation Endpoint
-
-### `POST /api/challenge` or `POST /captcha/challenge`
-
-Generates an adaptive challenge session with leading-zero Proof-of-Work difficulty.
-
-#### Request Body:
-```json
-{
-  "mode": "checkbox" // "checkbox" | "jigsaw" | "adaptive"
-}
-```
-
-#### Response (200 OK) — Checkbox Mode:
-```json
-{
-  "id": "df324ea7a949669caa09308430883555",
-  "mode": "checkbox",
-  "salt": "a4d8c7e9f1...",
-  "bits": 12,
-  "prefix": "3c39d12b95ad2df34fe3",
-  "siteKey": "pub_shield_live_...",
-  "token": "<Signed-Challenge-Session-Token>"
-}
-```
-
-#### Response (200 OK) — Jigsaw Mode:
-```json
-{
-  "id": "81a777a160d6fdca4634bbfc3e941d2f",
-  "mode": "jigsaw",
-  "salt": "b9f2c8...",
-  "bits": 12,
-  "prefix": "e7c10b...",
-  "siteKey": "pub_shield_live_...",
-  "bg": "data:image/png;base64,...",
-  "piece": "data:image/png;base64,...",
-  "pieceY": 48,
-  "token": "<Signed-Challenge-Session-Token>"
-}
-```
+- **Base URL:** `http://localhost:3000` (or your configured production domain)
+- **OpenAPI 3.0 Specification:** `GET /api/v1/openapi.json`
+- **Supported Encodings:** `application/json` and `application/x-www-form-urlencoded`
 
 ---
 
-## 2. Challenge Verification Endpoint
+## 1. Developer API Key Management
 
-### `POST /api/verify` or `POST /captcha/verify`
+### `POST /api/v1/keys/create`
+Generates a new public SiteKey and private SecretKey pair for your domains.
 
-Validates Proof-of-Work solution, kinematic trajectory, and client environment integrity.
-
-#### Request Body (Plain or XOR Encrypted):
+#### Request Body (`application/json`):
 ```json
 {
-  "id": "df324ea7a949669caa09308430883555",
-  "nonce": "1a3",
-  "powDuration": 18,
-  "trail": [[0, 20, 100], [50, 21, 140], [140, 20, 220]],
-  "trustedEvent": true,
-  "honeypot": "",
-  "env": {
-    "webdriver": false,
-    "isHeadless": false,
-    "languages": 2,
-    "timezone": "Asia/Kolkata"
-  }
+  "name": "Production Storefront",
+  "allowedDomains": ["store.example.com", "localhost"],
+  "mode": "adaptive" // "adaptive" | "checkbox" | "jigsaw"
 }
 ```
 
-#### Response (200 OK) — Passed:
-```json
-{
-  "ok": true,
-  "token": "<Signed-Single-Use-Authorization-Token>",
-  "score": 95,
-  "mode": "checkbox_pow",
-  "audit": {
-    "kinematics": {
-      "velocity": "natural_organic",
-      "tremor": "physiological_tremor"
-    },
-    "powBits": 12
-  }
-}
-```
-
-#### Response (200 OK) — Step-Up Required (Suspicious Click Escalation):
-```json
-{
-  "ok": false,
-  "escalate": true,
-  "reason": "step_up_challenge_required",
-  "challenge": {
-    "id": "step_up_id...",
-    "mode": "jigsaw",
-    "bits": 14,
-    "prefix": "...",
-    "bg": "data:image/png;base64,...",
-    "piece": "data:image/png;base64,...",
-    "pieceY": 54
-  }
-}
-```
-
-#### Response (200 OK) — Rejected:
-```json
-{
-  "ok": false,
-  "reason": "puzzle_misaligned",
-  "details": { "receivedX": 50 }
-}
-```
-
----
-
-## 3. Server-to-Server Site Verification
-
-### `POST /api/siteverify` or `POST /captcha/siteverify`
-
-Validates the client-submitted authorization token on your backend.
-
-#### Headers:
-```http
-Authorization: Bearer <YOUR_SITE_SECRET>
-Content-Type: application/json
-```
-*(Also supports `X-Site-Secret` or `X-API-Key` headers)*
-
-#### Request Body:
-```json
-{
-  "token": "<Signed-Single-Use-Authorization-Token>",
-  "ip": "203.0.113.195" // Optional: Client IP for cryptographic binding verification
-}
-```
-
-#### Response (200 OK) — Validated:
+#### Response (201 Created):
 ```json
 {
   "success": true,
-  "score": 95,
-  "mode": "checkbox_pow",
-  "authorized": true,
-  "siteKey": "pub_shield_live_...",
-  "tokenId": "7a11f6ef39d296628c23dc342fb9a4ab",
-  "verifiedAt": 1791102057893
-}
-```
-
-#### Response (200 OK) — Rejected / Already Used:
-```json
-{
-  "success": false,
-  "error": "token_already_consumed"
+  "message": "API Key pair generated successfully",
+  "key": {
+    "siteKey": "pub_shield_1e89f19bc422be2ebea11462",
+    "secretKey": "sec_shield_82af936df77c22284deb13e4b71f8ffa",
+    "name": "Production Storefront",
+    "allowedDomains": ["store.example.com", "localhost"],
+    "mode": "adaptive",
+    "createdAt": "2026-10-04T11:49:36.123Z",
+    "totalRequests": 0,
+    "active": true
+  }
 }
 ```
 
 ---
 
-## 4. Live Threat Analytics
-
-### `GET /api/stats`
-
-Returns aggregated real-time security telemetry.
+### `GET /api/v1/keys/list`
+Lists all active API keys registered on this ShieldCaptcha instance.
 
 #### Response (200 OK):
 ```json
 {
-  "totalChallenges": 142,
-  "verifiedHumans": 138,
-  "blockedBots": 4,
-  "escalatedToPuzzle": 12,
-  "modeStats": { "checkbox": 95, "jigsaw": 47, "adaptive": 12 },
-  "siteKey": "pub_shield_live_...",
-  "uptimeSec": 3600,
-  "activeChallenges": 2,
-  "activeRateLimiters": 8
+  "success": true,
+  "count": 2,
+  "keys": [
+    {
+      "siteKey": "pub_shield_live_cfe30e557c7abf646b575948",
+      "secretKeyMasked": "sec_shield_live_...3469",
+      "name": "Default Root Key",
+      "allowedDomains": ["*"],
+      "mode": "adaptive",
+      "createdAt": "2026-10-04T11:29:04.179Z",
+      "totalRequests": 45,
+      "active": true
+    }
+  ]
+}
+```
+
+---
+
+### `POST /api/v1/keys/revoke`
+Deactivates an API key.
+
+#### Request Body:
+```json
+{
+  "siteKey": "pub_shield_1e89f19bc422be2ebea11462"
+}
+```
+
+---
+
+## 2. Server-to-Server Verification (Standard `siteverify`)
+
+### `POST /api/v1/siteverify` (also `POST /api/siteverify`)
+Validates a client verification token submitted through a web form or mobile client. Compatible with standard reCAPTCHA and Turnstile implementations.
+
+#### Supported Content-Types:
+- `application/x-www-form-urlencoded`
+- `application/json`
+
+#### Parameters:
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `secret` | string | **Yes** | Your private Secret Key (`sec_shield_...`). Can also be passed via `Authorization: Bearer <secret>` or `X-Site-Secret` header. |
+| `response` or `token` | string | **Yes** | The single-use verification token received from the frontend widget. |
+| `remoteip` | string | Optional | End-user's IP address for cryptographic binding check. |
+
+#### cURL Example:
+```bash
+curl -X POST "http://localhost:3000/api/v1/siteverify" \
+  -d "secret=sec_shield_82af936df77c22284deb13e4b71f8ffa&response=TOKEN_FROM_FORM&remoteip=203.0.113.195"
+```
+
+#### Node.js / Express Example:
+```javascript
+const verifyCaptcha = async (token, clientIp) => {
+  const response = await fetch("http://localhost:3000/api/v1/siteverify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      secret: process.env.SHIELD_SECRET_KEY,
+      response: token,
+      remoteip: clientIp
+    })
+  });
+  const data = await response.json();
+  return data.success && data.score >= 50;
+};
+```
+
+#### Success Response (200 OK):
+```json
+{
+  "success": true,
+  "challenge_ts": "2026-10-04T11:49:36.123Z",
+  "hostname": "example.com",
+  "score": 95,
+  "mode": "checkbox_pow",
+  "authorized": true,
+  "site_key": "pub_shield_1e89f19bc422be2ebea11462",
+  "token_id": "e6bb3945171143179a8e758f291bfc9d",
+  "verifiedAt": 1791114576123,
+  "error-codes": []
+}
+```
+
+#### Error Response (200 OK or 400 Bad Request):
+```json
+{
+  "success": false,
+  "error-codes": ["timeout-or-duplicate"],
+  "error": "token_already_consumed"
+}
+```
+
+Standard `error-codes`:
+- `missing-input-secret`: Secret key parameter was missing.
+- `invalid-input-secret`: Secret key provided is invalid or inactive.
+- `missing-input-response`: Token parameter was missing.
+- `invalid-input-response`: Token signature was invalid or tampered with.
+- `timeout-or-duplicate`: Token expired or was already consumed (replay attack blocked).
+- `bad-request`: Client IP binding mismatch.
+
+---
+
+## 3. Token Inspector (Dry-Run / Debugging)
+
+### `POST /api/v1/token/inspect`
+Inspects token claims, signature, and expiration **without consuming its single-use status**.
+
+#### Request Body:
+```json
+{
+  "token": "eyJqdGkiOiJlNmJiMzk0N..."
+}
+```
+
+#### Response (200 OK):
+```json
+{
+  "valid": true,
+  "signatureValid": true,
+  "expired": false,
+  "consumed": false,
+  "payload": {
+    "tokenId": "e6bb3945171143179a8e758f291bfc9d",
+    "challengeId": "9c3c32a3bb08ae5cdee8a7e5b9bb0d1a",
+    "siteKey": "pub_shield_1e89f19bc422be2ebea11462",
+    "mode": "checkbox_pow",
+    "score": 95,
+    "issuedAt": "2026-10-04T11:49:36.123Z",
+    "expiresAt": "2026-10-04T11:51:36.123Z",
+    "ttlRemainingSec": 118,
+    "subIpHash": "4a7c1b82e9d3..."
+  }
+}
+```
+
+---
+
+## 4. Challenge Endpoints (Client / Frontend)
+
+### `POST /api/v1/challenge` (or `POST /api/challenge`)
+Issues an adaptive Proof-of-Work challenge or anti-CV jigsaw slider puzzle.
+
+#### Request Body:
+```json
+{
+  "siteKey": "pub_shield_1e89f19bc422be2ebea11462",
+  "mode": "adaptive"
+}
+```
+
+---
+
+## 5. System Health & Diagnostics
+
+### `GET /api/v1/health`
+Returns service health, version, uptime, and active key count.
+
+#### Response:
+```json
+{
+  "status": "healthy",
+  "service": "ShieldCaptcha Enterprise Engine",
+  "version": "4.2-enterprise",
+  "uptimeSec": 420,
+  "activeKeys": 3,
+  "activeChallenges": 1,
+  "timestamp": "2026-10-04T11:50:00.000Z"
 }
 ```

@@ -21,7 +21,8 @@ export async function proxyToBackend(req: NextRequest, endpoint: string) {
       const body = await req.text();
       if (body) {
         init.body = body;
-        headers.set("Content-Type", "application/json");
+        const incomingContentType = req.headers.get("content-type");
+        headers.set("Content-Type", incomingContentType || "application/json");
       }
     }
 

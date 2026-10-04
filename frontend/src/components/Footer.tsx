@@ -116,6 +116,10 @@ export function Footer() {
           <div className="flex flex-col gap-2.5">
             <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider">Live Tools &amp; Testing</h4>
             <div className="flex flex-col gap-1.5 text-slate-600">
+              <Link href="/api-keys" className="hover:text-indigo-600 transition-colors flex items-center justify-between text-indigo-700 font-semibold">
+                <span>Developer API &amp; Keys</span>
+                <ArrowUpRight className="w-3 h-3 text-indigo-400" />
+              </Link>
               <Link href="/demo" className="hover:text-indigo-600 transition-colors flex items-center justify-between">
                 <span>Protected Sign In Demo</span>
                 <ArrowUpRight className="w-3 h-3 text-slate-400" />

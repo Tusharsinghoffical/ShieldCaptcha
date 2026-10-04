@@ -10,6 +10,7 @@ export function Navbar() {
 
   const navLinks = [
     { name: "Live Trial", href: "/" },
+    { name: "API & Keys", href: "/api-keys" },
     { name: "Documentation", href: "/docs" },
     { name: "Attack Simulator", href: "/simulator" },
     { name: "Add to Project", href: "/integration" },

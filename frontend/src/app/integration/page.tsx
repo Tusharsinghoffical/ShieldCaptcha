@@ -33,10 +33,13 @@ export default function IntegrationPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold flex items-center gap-1.5">
+            <Link
+              href="/api-keys"
+              className="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors"
+            >
               <KeyRound className="w-3.5 h-3.5" />
-              REST API Ready
-            </span>
+              Manage API Keys &amp; Tokens
+            </Link>
           </div>
         </div>
 

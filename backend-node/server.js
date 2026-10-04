@@ -48,6 +48,42 @@ const seenNonces = new Map();  // v4.2: request nonce dedup (prevents payload re
 const ipBuckets = new Map();
 const ipFails = new Map();
 
+// Multi-Tenant API Keys Vault
+const apiKeys = new Map();
+apiKeys.set(SITE_KEY, {
+  siteKey: SITE_KEY,
+  secretKey: SITE_SECRET,
+  name: 'Default Root Key',
+  allowedDomains: ['*'],
+  createdAt: new Date().toISOString(),
+  mode: 'adaptive',
+  totalRequests: 0,
+  active: true
+});
+
+function getApiKeyBySecret(secret) {
+  if (!secret) return null;
+  const cleanSec = String(secret).trim();
+  for (const k of apiKeys.values()) {
+    if (k.active && k.secretKey === cleanSec) return k;
+  }
+  if (cleanSec === SITE_SECRET) {
+    return { siteKey: SITE_KEY, secretKey: SITE_SECRET, name: 'Default Root Key', active: true };
+  }
+  return null;
+}
+
+function getApiKeyBySiteKey(siteKey) {
+  if (!siteKey) return null;
+  const cleanSite = String(siteKey).trim();
+  const k = apiKeys.get(cleanSite);
+  if (k && k.active) return k;
+  if (cleanSite === SITE_KEY) {
+    return { siteKey: SITE_KEY, secretKey: SITE_SECRET, name: 'Default Root Key', active: true };
+  }
+  return null;
+}
+
 // Global Metrics & Threat Analytics
 const metrics = {
   totalChallenges: 0,
@@ -142,17 +178,28 @@ function countLeadingZeroBits(buf) {
    2. IP Tracking, Leaky-Bucket Rate Limiter & Tarpit
    ========================================================================== */
 
+const normalizeIp = ip => {
+  if (!ip) return '127.0.0.1';
+  let s = String(ip).trim();
+  if (s.startsWith('::ffff:')) s = s.replace('::ffff:', '');
+  if (s === '::1') return '127.0.0.1';
+  return s;
+};
+
 const getClientIp = req => {
+  let rawIp = '127.0.0.1';
   if (process.env.TRUST_PROXY) {
     const xff = req.headers['x-forwarded-for'];
-    if (xff) return xff.split(',')[0].trim();
+    if (xff) rawIp = xff.split(',')[0].trim();
+  } else {
+    rawIp = req.socket.remoteAddress || '127.0.0.1';
   }
-  return req.socket.remoteAddress || '127.0.0.1';
+  return normalizeIp(rawIp);
 };
 
 const getClientUa = req => req.headers['user-agent'] || 'unknown';
 const getClientFingerprint = req => sha256(`${getClientIp(req)}|${getClientUa(req)}`).slice(0, 20);
-const ipHash = ip => sha256(String(ip) + CAPTCHA_SECRET).slice(0, 16);
+const ipHash = ip => sha256(normalizeIp(ip) + CAPTCHA_SECRET).slice(0, 16);
 
 function checkRateLimit(ip) {
   const now = Date.now();
@@ -729,15 +776,94 @@ const sendJson = (res, code, data) => {
   res.end(JSON.stringify(data));
 };
 
+const OPENAPI_SPEC = {
+  openapi: "3.0.3",
+  info: {
+    title: "ShieldCaptcha Enterprise Developer REST API",
+    version: "4.2.0",
+    description: "Enterprise bot mitigation and human verification engine. Provides 1-click Proof-of-Work, Anti-CV Jigsaw Slider, and Server-to-Server Token Validation."
+  },
+  servers: [{ url: "http://localhost:3000", description: "Local ShieldCaptcha Engine" }],
+  paths: {
+    "/api/v1/health": {
+      get: {
+        summary: "Service Health Check",
+        responses: { "200": { description: "Service is online and healthy" } }
+      }
+    },
+    "/api/v1/keys/create": {
+      post: {
+        summary: "Generate API Key Pair",
+        description: "Creates a new public SiteKey and private SecretKey pair for your domain.",
+        responses: { "201": { description: "Key pair generated successfully" } }
+      }
+    },
+    "/api/v1/keys/list": {
+      get: {
+        summary: "List Active API Keys",
+        responses: { "200": { description: "List of registered API keys" } }
+      }
+    },
+    "/api/v1/keys/revoke": {
+      post: {
+        summary: "Revoke an API Key",
+        responses: { "200": { description: "Key revoked" } }
+      }
+    },
+    "/api/v1/challenge": {
+      post: {
+        summary: "Request Verification Challenge",
+        description: "Issues an adaptive PoW challenge or Anti-CV jigsaw canvas for client solving.",
+        responses: { "200": { description: "Challenge payload" } }
+      }
+    },
+    "/api/v1/verify": {
+      post: {
+        summary: "Verify Challenge Solution (Client)",
+        description: "Submits solution nonce and kinematic telemetry to obtain a signed verification token.",
+        responses: { "200": { description: "Verification result and signed token" } }
+      }
+    },
+    "/api/v1/siteverify": {
+      post: {
+        summary: "Server-to-Server Verification (Backend)",
+        description: "Validates a verification token against your SecretKey. Supports JSON and application/x-www-form-urlencoded.",
+        responses: { "200": { description: "Verification status and trust score" } }
+      }
+    },
+    "/api/v1/token/inspect": {
+      post: {
+        summary: "Inspect Token Claims (Dry-run)",
+        description: "Inspects token signature, expiration, and payload metadata without consuming single-use status.",
+        responses: { "200": { description: "Decoded claims and cryptographic integrity status" } }
+      }
+    }
+  }
+};
+
 const readBody = req => new Promise(resolve => {
   let buf = '';
-  req.on('data', chunk => { buf += chunk; if (buf.length > 150000) req.destroy(); });
-  req.on('end', () => { try { resolve(JSON.parse(buf)); } catch { resolve({}); } });
+  req.on('data', chunk => { buf += chunk; if (buf.length > 250000) req.destroy(); });
+  req.on('end', () => {
+    if (!buf || !buf.trim()) return resolve({});
+    try {
+      return resolve(JSON.parse(buf));
+    } catch {
+      try {
+        const params = new URLSearchParams(buf);
+        const obj = Object.fromEntries(params.entries());
+        if (Object.keys(obj).length > 0) return resolve(obj);
+      } catch {}
+      return resolve({});
+    }
+  });
 });
 
 const server = http.createServer(async (req, res) => {
   const clientIp = getClientIp(req);
-  const u = req.url.split('?')[0];
+  const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  const u = parsedUrl.pathname;
+  const queryParams = parsedUrl.searchParams;
 
   // Security headers on ALL responses
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -750,8 +876,8 @@ const server = http.createServer(async (req, res) => {
     "default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; connect-src 'none'"
   );
   res.setHeader('Access-Control-Allow-Origin', process.env.ALLOWED_ORIGIN || '*');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Site-Secret, X-API-Key, Authorization');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Site-Secret, X-API-Key, Authorization, X-Site-Key');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
@@ -759,10 +885,132 @@ const server = http.createServer(async (req, res) => {
   }
 
   /* ----------------------------------------------------------------------
-     Endpoint 1: GET / POST /api/challenge & /captcha/challenge
+     Endpoint 0: System Health & OpenAPI Specification
+     ---------------------------------------------------------------------- */
+  if (req.method === 'GET' && (u === '/api/v1/health' || u === '/health')) {
+    return sendJson(res, 200, {
+      status: 'healthy',
+      service: 'ShieldCaptcha Enterprise Engine',
+      version: '4.2-enterprise',
+      uptimeSec: Math.floor((Date.now() - metrics.startedAt) / 1000),
+      activeKeys: apiKeys.size,
+      activeChallenges: challenges.size,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  if (req.method === 'GET' && (u === '/api/v1/openapi.json' || u === '/openapi.json')) {
+    return sendJson(res, 200, OPENAPI_SPEC);
+  }
+
+  /* ----------------------------------------------------------------------
+     Endpoint 0.1: Developer API Key Management
+     ---------------------------------------------------------------------- */
+  if (req.method === 'GET' && (u === '/api/v1/keys/list' || u === '/api/keys/list')) {
+    const list = Array.from(apiKeys.values()).map(k => ({
+      siteKey: k.siteKey,
+      secretKey: k.secretKey,
+      secretKeyMasked: k.secretKey ? k.secretKey.slice(0, 14) + '...' + k.secretKey.slice(-4) : '***',
+      name: k.name,
+      allowedDomains: k.allowedDomains || ['*'],
+      mode: k.mode || 'adaptive',
+      createdAt: k.createdAt,
+      totalRequests: k.totalRequests || 0,
+      active: k.active
+    }));
+    return sendJson(res, 200, { success: true, count: list.length, keys: list });
+  }
+
+  if (req.method === 'POST' && (u === '/api/v1/keys/create' || u === '/api/keys/create')) {
+    const body = await readBody(req);
+    const name = String(body.name || 'New ShieldCaptcha App').trim().slice(0, 50);
+    const rawDomains = Array.isArray(body.allowedDomains)
+      ? body.allowedDomains
+      : typeof body.allowedDomains === 'string'
+        ? body.allowedDomains.split(',').map(s => s.trim()).filter(Boolean)
+        : ['*'];
+    const allowedDomains = rawDomains.length > 0 ? rawDomains : ['*'];
+    const mode = ['checkbox', 'jigsaw', 'adaptive'].includes(body.mode) ? body.mode : 'adaptive';
+
+    const newSiteKey = 'pub_shield_' + crypto.randomBytes(12).toString('hex');
+    const newSecretKey = 'sec_shield_' + crypto.randomBytes(16).toString('hex');
+
+    const keyObj = {
+      siteKey: newSiteKey,
+      secretKey: newSecretKey,
+      name,
+      allowedDomains,
+      mode,
+      createdAt: new Date().toISOString(),
+      totalRequests: 0,
+      active: true
+    };
+    apiKeys.set(newSiteKey, keyObj);
+
+    return sendJson(res, 201, {
+      success: true,
+      message: 'API Key pair generated successfully',
+      key: keyObj
+    });
+  }
+
+  if ((req.method === 'POST' || req.method === 'DELETE') && (u === '/api/v1/keys/revoke' || u.startsWith('/api/v1/keys/'))) {
+    const body = await readBody(req);
+    let targetKey = body.siteKey;
+    if (!targetKey && u.startsWith('/api/v1/keys/') && u !== '/api/v1/keys/create' && u !== '/api/v1/keys/list' && u !== '/api/v1/keys/revoke') {
+      targetKey = u.replace('/api/v1/keys/', '');
+    }
+    if (!targetKey || targetKey === SITE_KEY) {
+      return sendJson(res, 400, { success: false, error: 'cannot_revoke_root_or_empty_key' });
+    }
+    if (!apiKeys.has(targetKey)) {
+      return sendJson(res, 404, { success: false, error: 'key_not_found' });
+    }
+    const rec = apiKeys.get(targetKey);
+    rec.active = false;
+    return sendJson(res, 200, { success: true, message: `Key ${targetKey} deactivated successfully`, siteKey: targetKey });
+  }
+
+  /* ----------------------------------------------------------------------
+     Endpoint 0.2: Token Inspection Utility (Dry-Run / Debugging)
+     ---------------------------------------------------------------------- */
+  if (req.method === 'POST' && (u === '/api/v1/token/inspect' || u === '/api/token/inspect')) {
+    const body = await readBody(req);
+    const token = body.token || body.response;
+    if (!token) {
+      return sendJson(res, 400, { valid: false, error: 'missing_token' });
+    }
+    const payload = verifySignedToken(token);
+    if (!payload) {
+      return sendJson(res, 200, { valid: false, reason: 'invalid_or_tampered_signature' });
+    }
+    const now = Date.now();
+    const isExpired = payload.exp < now;
+    const isConsumed = usedTokens.has(payload.jti || payload.cid);
+    return sendJson(res, 200, {
+      valid: !isExpired && !isConsumed,
+      signatureValid: true,
+      expired: isExpired,
+      consumed: isConsumed,
+      payload: {
+        tokenId: payload.jti,
+        challengeId: payload.cid,
+        siteKey: payload.aud,
+        mode: payload.mode,
+        score: payload.score,
+        issuedAt: new Date(payload.iat).toISOString(),
+        expiresAt: new Date(payload.exp).toISOString(),
+        ttlRemainingSec: Math.max(0, Math.floor((payload.exp - now) / 1000)),
+        subIpHash: payload.sub
+      }
+    });
+  }
+
+  /* ----------------------------------------------------------------------
+     Endpoint 1: GET / POST /api/challenge & /captcha/challenge & /api/v1/challenge
      Generates Smart Checkbox PoW challenge OR Anti-CV Jigsaw challenge
      ---------------------------------------------------------------------- */
-  if ((req.method === 'GET' || req.method === 'POST') && (u === '/api/challenge' || u === '/captcha/challenge')) {
+  if ((req.method === 'GET' || req.method === 'POST') && (u === '/api/challenge' || u === '/captcha/challenge' || u === '/api/v1/challenge')) {
     if (isIpLocked(clientIp)) {
       return sendJson(res, 429, { error: 'ip_temporarily_locked', retryAfterSec: 300 });
     }
@@ -774,7 +1022,17 @@ const server = http.createServer(async (req, res) => {
 
     metrics.totalChallenges++;
     const reqBody = req.method === 'POST' ? await readBody(req) : {};
-    const mode = reqBody.mode || 'adaptive'; // 'checkbox', 'jigsaw', or 'adaptive'
+    
+    // Multi-tenant Site Key resolution
+    const requestedSiteKey = reqBody.siteKey || queryParams.get('sitekey') || queryParams.get('siteKey') || req.headers['x-site-key'] || SITE_KEY;
+    const keyRecord = getApiKeyBySiteKey(requestedSiteKey);
+    const activeSiteKey = keyRecord ? keyRecord.siteKey : SITE_KEY;
+    if (keyRecord) {
+      keyRecord.totalRequests = (keyRecord.totalRequests || 0) + 1;
+      keyRecord.lastUsedAt = new Date().toISOString();
+    }
+
+    const mode = reqBody.mode || (keyRecord && keyRecord.mode !== 'adaptive' ? keyRecord.mode : 'adaptive');
     metrics.modeStats[mode] = (metrics.modeStats[mode] || 0) + 1;
 
     const cid = crypto.randomBytes(16).toString('hex');
@@ -792,6 +1050,7 @@ const server = http.createServer(async (req, res) => {
         powPrefix,
         powBits,
         sessionSalt,
+        siteKey: activeSiteKey,
         createdAt: Date.now(),
         ip: clientIp,
         fingerprint: getClientFingerprint(req)
@@ -803,8 +1062,8 @@ const server = http.createServer(async (req, res) => {
         salt: sessionSalt,
         bits: powBits,
         prefix: powPrefix,
-        siteKey: SITE_KEY,
-        token: createSignedToken({ cid, powPrefix, powBits, exp: Date.now() + CHALLENGE_TTL, ip: ipHash(clientIp) })
+        siteKey: activeSiteKey,
+        token: createSignedToken({ cid, powPrefix, powBits, exp: Date.now() + CHALLENGE_TTL, ip: ipHash(clientIp), aud: activeSiteKey })
       });
     }
 
@@ -817,6 +1076,7 @@ const server = http.createServer(async (req, res) => {
       powPrefix,
       powBits,
       sessionSalt,
+      siteKey: activeSiteKey,
       createdAt: Date.now(),
       ip: clientIp,
       fingerprint: getClientFingerprint(req)
@@ -828,19 +1088,19 @@ const server = http.createServer(async (req, res) => {
       salt: sessionSalt,
       bits: powBits,
       prefix: powPrefix,
-      siteKey: SITE_KEY,
+      siteKey: activeSiteKey,
       bg: puzzle.bgDataUrl,
       piece: puzzle.pieceDataUrl,
       pieceY: puzzle.targetY,
-      token: createSignedToken({ cid, powPrefix, powBits, exp: Date.now() + CHALLENGE_TTL, ip: ipHash(clientIp) })
+      token: createSignedToken({ cid, powPrefix, powBits, exp: Date.now() + CHALLENGE_TTL, ip: ipHash(clientIp), aud: activeSiteKey })
     });
   }
 
   /* ----------------------------------------------------------------------
-     Endpoint 2: POST /api/verify & /captcha/verify
+     Endpoint 2: POST /api/verify & /captcha/verify & /api/v1/verify
      Validates PoW, Kinematics, Honeypot & Environment
      ---------------------------------------------------------------------- */
-  if (req.method === 'POST' && (u === '/api/verify' || u === '/captcha/verify')) {
+  if (req.method === 'POST' && (u === '/api/verify' || u === '/captcha/verify' || u === '/api/v1/verify')) {
     const rawBody = await readBody(req);
     const challenge = challenges.get(rawBody.id);
 
@@ -907,7 +1167,7 @@ const server = http.createServer(async (req, res) => {
 
     // Mode-specific evaluation
     if (challenge.mode === 'checkbox') {
-      // 1-Click Checkbox: ambient + environment + interaction report + click timing
+      // 1-Click Smart Checkbox: ambient + environment + interaction report + click timing
       const ambient = analyzeAmbientEntropy(payload.trace || []);
       const envAudit = auditClientEnvironment(payload.env, req);
       const interactionAudit = auditInteractionReport(payload.interaction);
@@ -937,6 +1197,7 @@ const server = http.createServer(async (req, res) => {
           powPrefix: crypto.randomBytes(10).toString('hex'),
           powBits: Math.min(MAX_POW_BITS, challenge.powBits + 2), // Harder step-up PoW
           sessionSalt: stepUpSalt,
+          siteKey: challenge.siteKey || SITE_KEY,
           createdAt: Date.now(),
           ip: clientIp,
           fingerprint: getClientFingerprint(req)
@@ -966,7 +1227,7 @@ const server = http.createServer(async (req, res) => {
         jti: crypto.randomBytes(16).toString('hex'),
         cid: rawBody.id,
         sub: ipHash(clientIp),
-        aud: SITE_KEY,
+        aud: challenge.siteKey || SITE_KEY,
         scope: 'captcha:authorized',
         mode: 'checkbox_pow',
         score: Math.max(0, 95 - totalPenalty),
@@ -1031,7 +1292,7 @@ const server = http.createServer(async (req, res) => {
       jti: crypto.randomBytes(16).toString('hex'),
       cid: rawBody.id,
       sub: ipHash(clientIp),
-      aud: SITE_KEY,
+      aud: challenge.siteKey || SITE_KEY,
       scope: 'captcha:authorized',
       mode: 'jigsaw_kinematics',
       score: finalScore,
@@ -1055,50 +1316,90 @@ const server = http.createServer(async (req, res) => {
   }
 
   /* ----------------------------------------------------------------------
-     Endpoint 3: POST /api/siteverify & /captcha/siteverify
+     Endpoint 3: POST /api/v1/siteverify & /api/siteverify & /captcha/siteverify
      Full Enterprise Server-to-Server Authentication & Authorization API
      ---------------------------------------------------------------------- */
-  if (req.method === 'POST' && (u === '/api/siteverify' || u === '/captcha/siteverify')) {
+  if (req.method === 'POST' && (u === '/api/v1/siteverify' || u === '/api/siteverify' || u === '/captcha/siteverify')) {
+    const body = await readBody(req);
     const authHeader = req.headers['x-site-secret'] || req.headers['x-api-key'] || (req.headers['authorization'] || '').replace('Bearer ', '');
-    const headerBuf = Buffer.from(String(authHeader || ''));
-    const secretBuf = Buffer.from(SITE_SECRET);
+    const secret = body.secret || body.secretKey || authHeader || queryParams.get('secret');
+    const token = body.response || body.token || body.captcha_token || queryParams.get('response') || queryParams.get('token');
+    const clientIpToCheck = body.remoteip || body.ip || queryParams.get('remoteip') || queryParams.get('ip');
 
-    if (headerBuf.length !== secretBuf.length || !crypto.timingSafeEqual(headerBuf, secretBuf)) {
-      return sendJson(res, 401, { success: false, error: 'unauthorized_invalid_site_secret' });
+    if (!secret) {
+      return sendJson(res, 400, {
+        success: false,
+        'error-codes': ['missing-input-secret'],
+        error: 'missing_secret_key'
+      });
     }
 
-    const body = await readBody(req);
-    const token = body.token;
-    const clientIpToCheck = body.ip || body.remoteip;
+    const keyRecord = getApiKeyBySecret(secret);
+    if (!keyRecord) {
+      return sendJson(res, 401, {
+        success: false,
+        'error-codes': ['invalid-input-secret'],
+        error: 'unauthorized_invalid_site_secret'
+      });
+    }
+
+    if (!token) {
+      return sendJson(res, 400, {
+        success: false,
+        'error-codes': ['missing-input-response'],
+        error: 'missing_input_response'
+      });
+    }
 
     const payload = verifySignedToken(token);
     if (!payload) {
-      return sendJson(res, 200, { success: false, error: 'invalid_or_tampered_token' });
+      return sendJson(res, 200, {
+        success: false,
+        'error-codes': ['invalid-input-response'],
+        error: 'invalid_or_tampered_token'
+      });
     }
 
     if (payload.exp < Date.now()) {
-      return sendJson(res, 200, { success: false, error: 'token_expired' });
+      return sendJson(res, 200, {
+        success: false,
+        'error-codes': ['timeout-or-duplicate'],
+        error: 'token_expired'
+      });
     }
 
-    // Atomic Single-Use Check
-    if (usedTokens.has(payload.jti || payload.cid)) {
-      return sendJson(res, 200, { success: false, error: 'token_already_consumed' });
+    // Atomic Single-Use Check (Replay Prevention)
+    const tokenKey = payload.jti || payload.cid;
+    if (usedTokens.has(tokenKey)) {
+      return sendJson(res, 200, {
+        success: false,
+        'error-codes': ['timeout-or-duplicate'],
+        error: 'token_already_consumed'
+      });
     }
-    usedTokens.set(payload.jti || payload.cid, payload.exp);
 
-    // Cryptographic Client IP Binding Check
-    if (clientIpToCheck && payload.sub !== ipHash(clientIpToCheck)) {
-      return sendJson(res, 200, { success: false, error: 'client_ip_binding_mismatch' });
+    // Cryptographic Client IP Binding Check (if remoteip provided)
+    if (clientIpToCheck && payload.sub && payload.sub !== ipHash(clientIpToCheck)) {
+      return sendJson(res, 200, {
+        success: false,
+        'error-codes': ['bad-request'],
+        error: 'client_ip_binding_mismatch'
+      });
     }
+
+    usedTokens.set(tokenKey, payload.exp);
 
     return sendJson(res, 200, {
       success: true,
-      score: payload.score,
-      mode: payload.mode,
+      challenge_ts: new Date(payload.iat).toISOString(),
+      hostname: req.headers.host || 'localhost',
+      score: payload.score || 90,
+      mode: payload.mode || 'adaptive',
       authorized: true,
-      siteKey: payload.aud,
-      tokenId: payload.jti,
-      verifiedAt: payload.iat
+      site_key: payload.aud || keyRecord.siteKey,
+      token_id: payload.jti,
+      verifiedAt: payload.iat,
+      'error-codes': []
     });
   }
 
@@ -1182,10 +1483,12 @@ setInterval(() => {
 const PORT = parseInt(process.env.PORT || '3000', 10);
 server.listen(PORT, () => {
   console.log(`====================================================`);
-  console.log(`🛡️  ShieldCaptcha Enterprise v4.1 — Hardened Security Edition`);
+  console.log(`🛡️  ShieldCaptcha Enterprise v4.2 — Developer REST API Edition`);
   console.log(`👉  Listening on http://localhost:${PORT}`);
   console.log(`🔑  SITE_KEY:    ${SITE_KEY}`);
   console.log(`🔐  SITE_SECRET: ${SITE_SECRET}`);
+  console.log(`📋  OpenAPI:     http://localhost:${PORT}/api/v1/openapi.json`);
+  console.log(`🚀  Siteverify:  POST http://localhost:${PORT}/api/v1/siteverify`);
   console.log(`🔒  AES-CBC-128 payload encryption enabled`);
   console.log(`⚡  BASE_POW_BITS=${BASE_POW_BITS} | MAX_POW_BITS=${MAX_POW_BITS} | IP_LOCK_THRESHOLD=${IP_LOCK_THRESHOLD}`);
   console.log(`====================================================`);
