@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.png" width="120" height="120" alt="ShieldCaptcha Logo" />
+  <img src="./assets/logo.png" width="120" height="120" alt="ShieldCaptcha Logo" />
 </p>
 
 <h1 align="center">ShieldCaptcha Enterprise</h1>
@@ -38,7 +38,7 @@ ShieldCaptcha is a self-hostable, zero-cookie human verification and bot defense
 ## Architecture
 
 <p align="center">
-  <img src="assets/architecture-diagram.svg" width="100%" alt="ShieldCaptcha Architecture Diagram" />
+  <img src="./assets/architecture-diagram.png" width="100%" alt="ShieldCaptcha Dual-Defense Verification Architecture" />
 </p>
 
 ShieldCaptcha operates through an integrated four-stage pipeline:
