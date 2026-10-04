@@ -34,7 +34,8 @@ import {
   Sliders,
   Send,
   Clock,
-  Fingerprint
+  Fingerprint,
+  X
 } from "lucide-react";
 
 interface ApiKeyItem {
@@ -1137,9 +1138,9 @@ func verifyShieldCaptcha(token, clientIP string) (bool, int) {
                 </div>
                 <button
                   onClick={() => setShowCreateModal(false)}
-                  className="text-slate-400 hover:text-slate-600 text-xs font-bold p-1"
+                  className="text-slate-400 hover:text-slate-600 p-1 rounded-md hover:bg-slate-100 transition-colors"
                 >
-                  ✕
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 

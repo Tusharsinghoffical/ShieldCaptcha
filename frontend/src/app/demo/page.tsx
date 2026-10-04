@@ -9,6 +9,7 @@ import {
   ArrowLeft, 
   ArrowRight, 
   CheckCircle2, 
+  Check,
   ShieldCheck, 
   Lock, 
   Mail, 
@@ -113,7 +114,7 @@ export default function DemoPage() {
                         : "bg-slate-100 text-slate-500 border border-slate-200"
                     }`}
                   >
-                    {step > s.num ? "✓" : s.num}
+                    {step > s.num ? <Check className="w-3 h-3" /> : s.num}
                   </div>
                   <span
                     className={`text-[10px] font-semibold tracking-wide ${
@@ -174,14 +175,14 @@ export default function DemoPage() {
                           : "text-slate-600 hover:text-slate-900"
                       }`}
                     >
-                      {m === "checkbox" ? "🔘 1-Click" : m === "jigsaw" ? "🧩 Jigsaw" : "⚡ Step-Up"}
+                      {m === "checkbox" ? "1-Click" : m === "jigsaw" ? "Jigsaw Slider" : "Adaptive Step-Up"}
                     </button>
                   ))}
                 </div>
                 <div className="text-[11px] text-slate-500 mt-1.5 px-1">
-                  {activeMode === "checkbox" && "⚡ Fast Proof-of-Work Turnstile verification (under 20ms)."}
-                  {activeMode === "jigsaw" && "🧩 Interactive magnetic jigsaw puzzle slider challenge."}
-                  {activeMode === "adaptive" && "🛡️ Smart automatic risk-based security escalation."}
+                  {activeMode === "checkbox" && "Fast Proof-of-Work Turnstile verification (under 20ms)."}
+                  {activeMode === "jigsaw" && "Interactive magnetic jigsaw puzzle slider challenge."}
+                  {activeMode === "adaptive" && "Smart automatic risk-based security escalation."}
                 </div>
               </div>
 

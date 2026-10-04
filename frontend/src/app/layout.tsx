@@ -15,15 +15,12 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ShieldCaptcha Enterprise v4.0 — Smart Bot Defense",
+  title: "ShieldCaptcha Enterprise v4.2 — Smart Bot Defense",
   description: "Next.js & TypeScript Powered Bot Defense. Fast 1-Click Turnstile with Proof-of-Work and Anti-CV Interlocking Jigsaw Slider.",
   icons: {
-    icon: [
-      { url: "/logo.png?v=5", type: "image/png" },
-      { url: "/favicon.ico?v=5", type: "image/x-icon" }
-    ],
-    shortcut: "/logo.png?v=5",
-    apple: "/logo.png?v=5",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
   },
 };
 

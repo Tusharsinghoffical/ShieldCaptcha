@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Metadata } from "next";
+import { X } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Terms of Service — ShieldCaptcha Enterprise",
@@ -63,8 +64,9 @@ export default function TermsPage() {
                 "Launch denial-of-service attacks against any system",
                 "Resell as a commercial service without proper attribution",
               ].map(item => (
-                <div key={item} className="flex items-start gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-100 text-red-800 text-xs">
-                  <span className="text-red-500 font-bold mt-0.5">✕</span> {item}
+                <div key={item} className="flex items-start gap-2 px-3 py-2 rounded-lg bg-red-50/70 border border-red-200/70 text-red-800 text-xs">
+                  <X className="w-3.5 h-3.5 text-red-500 flex-shrink-0 mt-0.5" />
+                  <span>{item}</span>
                 </div>
               ))}
             </div>

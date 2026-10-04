@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Metadata } from "next";
+import { Check } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Privacy Policy — ShieldCaptcha Enterprise",
@@ -74,7 +75,8 @@ export default function PrivacyPage() {
                 "Advertising IDs or ad profiles",
               ].map(item => (
                 <div key={item} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs font-medium">
-                  <span className="text-emerald-600">✓</span> {item}
+                  <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                  <span>{item}</span>
                 </div>
               ))}
             </div>

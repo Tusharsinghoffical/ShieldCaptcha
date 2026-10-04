@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Metadata } from "next";
+import { CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Security Policy — ShieldCaptcha Enterprise",
@@ -173,20 +174,32 @@ export default function SecurityPage() {
             <h2 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2 mb-4">Threat Model — What We Defend Against</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
-                ["✓ Headless browsers (Puppeteer, Playwright, Selenium)", "emerald"],
-                ["✓ Programmatic click bots (isTrusted=false)", "emerald"],
-                ["✓ Linear / teleport drag automation", "emerald"],
-                ["✓ Computer-vision puzzle solvers", "emerald"],
-                ["✓ WebDriver-controlled browsers", "emerald"],
-                ["✓ Virtual machine / software-rendered GPU", "emerald"],
-                ["✓ Trajectory replay attacks", "emerald"],
-                ["✓ Burst / DDoS attempts (rate limiting)", "emerald"],
-                ["⚠ Advanced human-in-the-loop farms", "amber"],
-                ["⚠ AI-generated biomechanical trajectories", "amber"],
-                ["✕ Physical nation-state adversaries", "red"],
-              ].map(([item, c]) => (
-                <div key={item} className={`px-3 py-2 rounded-lg bg-${c}-50 border border-${c}-100 text-${c}-800 text-xs font-medium`}>
-                  {item}
+                { label: "Headless browsers (Puppeteer, Playwright, Selenium)", status: "defended" },
+                { label: "Programmatic click bots (isTrusted=false)", status: "defended" },
+                { label: "Linear / teleport drag automation", status: "defended" },
+                { label: "Computer-vision puzzle solvers", status: "defended" },
+                { label: "WebDriver-controlled browsers", status: "defended" },
+                { label: "Virtual machine / software-rendered GPU", status: "defended" },
+                { label: "Trajectory replay attacks", status: "defended" },
+                { label: "Burst / DDoS attempts (rate limiting)", status: "defended" },
+                { label: "Advanced human-in-the-loop farms", status: "mitigated" },
+                { label: "AI-generated biomechanical trajectories", status: "mitigated" },
+                { label: "Physical nation-state adversaries", status: "out-of-scope" },
+              ].map(({ label, status }) => (
+                <div
+                  key={label}
+                  className={`px-3 py-2.5 rounded-lg border text-xs font-medium flex items-center gap-2.5 ${
+                    status === "defended"
+                      ? "bg-emerald-50/70 border-emerald-200/70 text-emerald-800"
+                      : status === "mitigated"
+                      ? "bg-amber-50/70 border-amber-200/70 text-amber-800"
+                      : "bg-rose-50/70 border-rose-200/70 text-rose-800"
+                  }`}
+                >
+                  {status === "defended" && <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />}
+                  {status === "mitigated" && <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />}
+                  {status === "out-of-scope" && <XCircle className="w-4 h-4 text-rose-500 flex-shrink-0" />}
+                  <span>{label}</span>
                 </div>
               ))}
             </div>

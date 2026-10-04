@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Activity, Cpu, ShieldCheck, Zap } from "lucide-react";
+import { Activity, Cpu, ShieldCheck, Zap, Check } from "lucide-react";
 
 interface KinematicsOscilloscopeProps {
   lastPoint: any;
@@ -120,7 +120,9 @@ export function KinematicsOscilloscope({ lastPoint }: KinematicsOscilloscopeProp
             <ShieldCheck className="w-3 h-3 text-emerald-600" />
             Hardware Shield
           </span>
-          <span className="font-mono font-semibold text-emerald-700">✓ Clean Environment</span>
+          <span className="font-mono font-semibold text-emerald-700 flex items-center gap-1">
+            <Check className="w-3.5 h-3.5 text-emerald-600" /> Clean Environment
+          </span>
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Metadata } from "next";
+import { ShieldCheck, Check } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Cookie Policy — ShieldCaptcha Enterprise",
@@ -27,7 +28,7 @@ export default function CookiesPage() {
 
           {/* TL;DR banner */}
           <div className="p-5 rounded-2xl bg-emerald-50 border border-emerald-200 flex gap-4 items-start">
-            <span className="text-2xl">🍪</span>
+            <ShieldCheck className="w-6 h-6 text-emerald-600 shrink-0 mt-0.5" />
             <div>
               <h2 className="font-bold text-emerald-900 text-base mb-1">Short Answer: No Tracking Cookies</h2>
               <p className="text-emerald-800 text-sm">
@@ -106,7 +107,7 @@ export default function CookiesPage() {
                 "Any CDN-hosted font trackers",
               ].map(item => (
                 <div key={item} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 text-xs">
-                  <span className="text-emerald-600 font-bold">✓</span> Not used: {item}
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> Not used: {item}
                 </div>
               ))}
             </div>

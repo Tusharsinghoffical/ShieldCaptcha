@@ -1483,13 +1483,13 @@ setInterval(() => {
 const PORT = parseInt(process.env.PORT || '3000', 10);
 server.listen(PORT, () => {
   console.log(`====================================================`);
-  console.log(`🛡️  ShieldCaptcha Enterprise v4.2 — Developer REST API Edition`);
-  console.log(`👉  Listening on http://localhost:${PORT}`);
-  console.log(`🔑  SITE_KEY:    ${SITE_KEY}`);
-  console.log(`🔐  SITE_SECRET: ${SITE_SECRET}`);
-  console.log(`📋  OpenAPI:     http://localhost:${PORT}/api/v1/openapi.json`);
-  console.log(`🚀  Siteverify:  POST http://localhost:${PORT}/api/v1/siteverify`);
-  console.log(`🔒  AES-CBC-128 payload encryption enabled`);
-  console.log(`⚡  BASE_POW_BITS=${BASE_POW_BITS} | MAX_POW_BITS=${MAX_POW_BITS} | IP_LOCK_THRESHOLD=${IP_LOCK_THRESHOLD}`);
+  console.log(`[SHIELD] ShieldCaptcha Enterprise v4.2 - Developer REST API Edition`);
+  console.log(`[SERVER] Listening on http://localhost:${PORT}`);
+  console.log(`[KEY]    SITE_KEY:    ${SITE_KEY}`);
+  console.log(`[SECRET] SITE_SECRET: ${SITE_SECRET}`);
+  console.log(`[SPEC]   OpenAPI:     http://localhost:${PORT}/api/v1/openapi.json`);
+  console.log(`[API]    Siteverify:  POST http://localhost:${PORT}/api/v1/siteverify`);
+  console.log(`[CRYPTO] AES-CBC-128 payload encryption enabled`);
+  console.log(`[CONFIG] BASE_POW_BITS=${BASE_POW_BITS} | MAX_POW_BITS=${MAX_POW_BITS} | IP_LOCK_THRESHOLD=${IP_LOCK_THRESHOLD}`);
   console.log(`====================================================`);
 });

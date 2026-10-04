@@ -95,7 +95,7 @@ export default function Home() {
           <div className="flex items-center justify-between border-b border-slate-200 pb-3 mb-6">
             <div>
               <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                <span>🎯 Interactive Trial Playground</span>
+                <span>Interactive Trial Playground</span>
               </h2>
               <p className="text-xs text-slate-500">
                 Experience instant human verification and real-time biomechanical analysis
@@ -133,7 +133,7 @@ export default function Home() {
                         : "text-slate-600 hover:text-slate-900"
                     }`}
                   >
-                    {m === "checkbox" ? "🔘 1-Click" : m === "jigsaw" ? "🧩 Jigsaw" : "⚡ Step-Up"}
+                    {m === "checkbox" ? "1-Click" : m === "jigsaw" ? "Jigsaw Slider" : "Adaptive Step-Up"}
                   </button>
                 ))}
               </div>
@@ -249,7 +249,7 @@ export default function Home() {
         <section id="integration" className="scroll-mt-24 mb-12">
           <div className="border-b border-slate-200 pb-3 mb-4">
             <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-              <span>📦 Add to Your Project (Developer Integration)</span>
+              <span>Developer Integration &amp; SDK Hub</span>
             </h2>
             <p className="text-xs text-slate-500">Copy-paste ready snippets to protect any web application in minutes</p>
           </div>

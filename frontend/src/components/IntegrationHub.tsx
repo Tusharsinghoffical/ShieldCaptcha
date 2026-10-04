@@ -30,7 +30,7 @@ export function IntegrationHub() {
 
   // Mount widget (Choose 'checkbox', 'jigsaw', or 'adaptive')
   ShieldCaptcha.mount(document.getElementById('captcha-container'), {
-    mode: 'checkbox', // 🔘 1-Click Turnstile
+    mode: 'checkbox', // Checkbox 1-Click Verification
     onToken: (token, meta) => {
       captchaToken = token;
       document.getElementById('btn-login').disabled = false;
