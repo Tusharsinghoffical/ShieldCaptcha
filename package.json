@@ -1,6 +1,6 @@
 {
   "name": "shield-captcha-enterprise",
-  "version": "4.0.0",
+  "version": "4.2.0",
   "private": true,
   "description": "Unified Dual-Defense Bot Engine & Developer Portal (Next.js, Node.js, Python, TypeScript)",
   "scripts": {
@@ -8,7 +8,8 @@
     "dev:backend": "node backend-node/server.js",
     "build": "npm --prefix frontend run build",
     "start": "npm --prefix frontend start",
-    "start:backend": "node backend-node/server.js"
+    "start:backend": "node backend-node/server.js",
+    "postinstall": "npm --prefix frontend install"
   },
   "keywords": [
     "captcha",
