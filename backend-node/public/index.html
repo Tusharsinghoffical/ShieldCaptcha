@@ -1,0 +1,1334 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ShieldCaptcha Enterprise v4.0 — Developer Portal & Live Interactive Trial</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #070b14;
+      --card-bg: rgba(15, 23, 42, 0.78);
+      --card-border: rgba(255, 255, 255, 0.09);
+      --primary: #6366f1;
+      --primary-light: #818cf8;
+      --accent: #38bdf8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --code-bg: #0b1120;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(circle at 12% 15%, rgba(99, 102, 241, 0.16) 0%, transparent 45%),
+        radial-gradient(circle at 88% 82%, rgba(56, 189, 248, 0.14) 0%, transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 55%);
+      background-attachment: fixed;
+      color: var(--text);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 0 60px 0;
+      overflow-x: hidden;
+    }
+
+    /* Top Navbar */
+    .navbar {
+      width: 100%;
+      background: rgba(11, 17, 32, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: #fff;
+    }
+
+    .brand-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #6366f1, #38bdf8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
+    }
+
+    .brand-title {
+      font-weight: 800;
+      font-size: 17px;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-badge {
+      font-size: 11px;
+      font-weight: 700;
+      color: #818cf8;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      padding: 2px 7px;
+      border-radius: 999px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-link:hover { color: #fff; }
+
+    .btn-nav-docs {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-nav-docs:hover {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: #6366f1;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1180px;
+      padding: 0 20px;
+      margin-top: 36px;
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      margin-bottom: 34px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.32);
+      color: var(--primary-light);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 14px;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 10px var(--success);
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.35); opacity: 0.6; }
+    }
+
+    .hero h1 {
+      font-size: 38px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+      line-height: 1.2;
+      background: linear-gradient(135deg, #ffffff 40%, #cbd5e1 75%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      color: var(--text-muted);
+      font-size: 16px;
+      max-width: 760px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Metrics Bar */
+    .metrics-bar {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+      margin-bottom: 30px;
+    }
+
+    @media (max-width: 900px) {
+      .metrics-bar { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .metric-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .metric-val {
+      font-size: 24px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .val-emerald { color: #34d399; }
+    .val-indigo { color: #818cf8; }
+    .val-amber { color: #fbbf24; }
+    .val-cyan { color: #38bdf8; }
+    .val-purple { color: #c084fc; }
+
+    /* Section Headers */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 40px 0 18px 0;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Main Grid for Trial */
+    .trial-grid {
+      display: grid;
+      grid-template-columns: 410px 1fr;
+      gap: 26px;
+      align-items: start;
+    }
+
+    @media (max-width: 980px) {
+      .trial-grid { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--card-bg);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      position: relative;
+    }
+
+    .panel-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .mode-pills {
+      display: flex;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      gap: 4px;
+      margin-bottom: 20px;
+    }
+
+    .mode-pill {
+      flex: 1;
+      padding: 8px 6px;
+      border-radius: 7px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      outline: none;
+    }
+
+    .mode-pill.active {
+      background: #1e293b;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus { border-color: var(--primary); }
+
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 16px;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-submit:disabled {
+      background: #1e293b;
+      color: #64748b;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .token-preview {
+      margin-top: 14px;
+      padding: 12px;
+      background: var(--code-bg);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #38bdf8;
+      word-break: break-all;
+      display: none;
+    }
+
+    /* Diagnostics Tabbed View */
+    .tabs-nav {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      outline: none;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover { color: #fff; }
+    .tab-btn.active {
+      background: rgba(99, 102, 241, 0.15);
+      color: var(--primary-light);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Oscilloscope Radar Canvas */
+    .telemetry-radar {
+      height: 190px;
+      background: #090e1a;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .radar-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .radar-overlay-text {
+      position: absolute;
+      top: 10px;
+      left: 12px;
+      font-size: 10px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.35);
+      letter-spacing: 0.6px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .diagnostics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .diag-box {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .diag-title {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .diag-status {
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Bot Attack Lab */
+    .bot-attacks {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .bot-attack-card {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .bot-info {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .bot-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .bot-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .btn-test-attack {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-test-attack:hover {
+      background: rgba(239, 68, 68, 0.3);
+      color: #fff;
+    }
+
+    /* Code Snippets & Integration Section */
+    .integration-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .code-card {
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .code-header {
+      background: rgba(15, 23, 42, 0.7);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .code-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .code-lang-tabs {
+      display: flex;
+      gap: 6px;
+    }
+
+    .lang-tab {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .lang-tab.active {
+      background: #1e293b;
+      color: #38bdf8;
+    }
+
+    .btn-copy {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-muted);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+    }
+
+    .btn-copy:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .code-block {
+      padding: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #e2e8f0;
+      line-height: 1.55;
+      overflow-x: auto;
+      margin: 0;
+    }
+
+    .code-block code {
+      font-family: inherit;
+    }
+
+    /* Audit Terminal */
+    .audit-terminal {
+      background: #090e1a;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      padding: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      height: 200px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .audit-line { display: flex; gap: 8px; line-height: 1.4; }
+    .audit-time { color: #64748b; }
+    .audit-tag { font-weight: 700; border-radius: 3px; padding: 0 4px; }
+    .audit-info { color: #38bdf8; background: rgba(56, 189, 248, 0.1); }
+    .audit-pass { color: #34d399; background: rgba(52, 211, 153, 0.1); }
+    .audit-block { color: #f87171; background: rgba(248, 113, 113, 0.1); }
+
+    /* Footer */
+    footer {
+      margin-top: 50px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      border-top: 1px solid var(--card-border);
+      padding-top: 24px;
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Top Navigation Bar -->
+  <nav class="navbar">
+    <a href="#" class="nav-brand">
+      <img src="/logo.png" alt="ShieldCaptcha Logo" style="width: 36px; height: 36px; border-radius: 9px; object-fit: contain; filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.5));">
+      <div>
+        <span class="brand-title">ShieldCaptcha Enterprise</span>
+        <span class="brand-badge">v4.0 Final</span>
+      </div>
+    </a>
+
+    <div class="nav-links">
+      <a href="#trial" class="nav-link">Live Trial</a>
+      <a href="#simulator" class="nav-link">Bot Simulator</a>
+      <a href="#integrate" class="nav-link">Add To Your Project</a>
+      <a href="#docs" class="nav-link">Documentation</a>
+      <a href="/demo.html" class="btn-nav-docs" target="_blank">
+        <span>Minimal Demo</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Hero Header -->
+    <header class="hero">
+      <div style="margin: 0 auto 16px auto; width: 90px; height: 90px; position: relative;">
+        <img src="/logo.png" alt="ShieldCaptcha Logo" style="width: 90px; height: 90px; object-fit: contain; filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.6));">
+      </div>
+      <div class="hero-badge">
+        <span class="pulse-dot"></span>
+        <span>Unified Dual-Defense • Zero External Dependencies</span>
+      </div>
+      <h1>Ultra-Fast, Biomechanical & PoW Bot Defense</h1>
+      <p>
+        Seamless 1-Click Proof-of-Work (Turnstile style) merged with an Anti-Computer-Vision Interlocking
+        Jigsaw Slider (Arkose style). Humans verify effortlessly in 18ms, while automated scripts and AI crawlers are strictly stopped.
+      </p>
+    </header>
+
+    <!-- Metrics Bar -->
+    <div class="metrics-bar">
+      <div class="metric-card">
+        <span class="metric-label">Challenges Served</span>
+        <span class="metric-val val-cyan" id="metric-challenges">0</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Verified Humans</span>
+        <span class="metric-val val-emerald" id="metric-humans">0</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Attacks Blocked</span>
+        <span class="metric-val val-amber" id="metric-bots">0</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Step-Up Escalations</span>
+        <span class="metric-val val-purple" id="metric-escalations">0</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Avg PoW Duration</span>
+        <span class="metric-val val-indigo" id="metric-pow">18ms</span>
+      </div>
+    </div>
+
+    <!-- Section 1: Interactive Live Trial -->
+    <div id="trial" class="section-header">
+      <div>
+        <div class="section-title">
+          <span>🎯 Interactive Live Trial</span>
+        </div>
+        <div class="section-desc">Test both 1-Click Checkbox and Magnetic Jigsaw Slider directly below:</div>
+      </div>
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted);" id="site-key-badge">SITE_KEY: Loading...</div>
+    </div>
+
+    <div class="trial-grid">
+      <!-- Left Panel: Protected Form -->
+      <div class="panel">
+        <div class="panel-title">
+          <span>Protected Test Form</span>
+          <span style="font-size: 11px; color: #10b981; font-weight: 600;">● Engine Ready</span>
+        </div>
+
+        <!-- Mode Switcher -->
+        <div class="mode-pills">
+          <button class="mode-pill active" data-mode="checkbox">🔘 1-Click Turnstile</button>
+          <button class="mode-pill" data-mode="jigsaw">🧩 Jigsaw (Magnetic)</button>
+          <button class="mode-pill" data-mode="adaptive">⚡ Auto Step-Up</button>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Account Email</label>
+          <input id="email" class="form-input" type="email" value="developer@enterprise.io">
+        </div>
+
+        <div class="form-group">
+          <label>Security Verification</label>
+          <div id="sc-mount-point"></div>
+        </div>
+
+        <button id="btn-submit" class="btn-submit" disabled>Authenticate & Create Account</button>
+
+        <div id="token-box" class="token-preview">
+          <div style="color: #94a3b8; margin-bottom: 4px; font-weight: 600;">Generated Authorization Token:</div>
+          <div id="token-str"></div>
+        </div>
+      </div>
+
+      <!-- Right Panel: Radar & Diagnostics -->
+      <div class="panel">
+        <div class="tabs-nav">
+          <button class="tab-btn active" data-tab="tab-oscilloscope">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            Live Kinematics
+          </button>
+          <button class="tab-btn" data-tab="tab-simulator">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+            Attack Simulator
+          </button>
+          <button class="tab-btn" data-tab="tab-audit">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            Audit Log
+          </button>
+        </div>
+
+        <!-- TAB A: Oscilloscope -->
+        <div id="tab-oscilloscope" class="tab-content active">
+          <div class="telemetry-radar">
+            <canvas id="radar-canvas" class="radar-canvas"></canvas>
+            <div class="radar-overlay-text">REAL-TIME TRAJECTORY & JERK OSCILLOSCOPE</div>
+          </div>
+
+          <div class="diagnostics-grid">
+            <div class="diag-box">
+              <div class="diag-title">Proof-of-Work Engine</div>
+              <div id="diag-pow" class="diag-status" style="color: #818cf8;">● Active (SHA-256 Worker)</div>
+            </div>
+            <div class="diag-box">
+              <div class="diag-title">Musculoskeletal Tremor</div>
+              <div id="diag-tremor" class="diag-status" style="color: #38bdf8;">Waiting for action...</div>
+            </div>
+            <div class="diag-box">
+              <div class="diag-title">Flash & Hogan Minimum Jerk</div>
+              <div id="diag-jerk" class="diag-status" style="color: #94a3b8;">Bounded Derivative Mode</div>
+            </div>
+            <div class="diag-box">
+              <div class="diag-title">Browser Environment Shield</div>
+              <div id="diag-env" class="diag-status" style="color: #34d399;">✓ Clean Hardware Profile</div>
+            </div>
+          </div>
+
+          <div style="background: rgba(15, 23, 42, 0.6); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: var(--text-muted); line-height: 1.5; border: 1px solid var(--card-border);">
+            💡 <strong>Trial Tip:</strong> In <strong>1-Click Turnstile</strong> mode, clicking the checkbox validates instantly. In <strong>Jigsaw</strong> mode, drag the slider smoothly towards the glowing puzzle socket!
+          </div>
+        </div>
+
+        <!-- TAB B: Attack Simulator -->
+        <div id="tab-simulator" class="tab-content">
+          <div class="bot-attacks">
+            <div class="bot-attack-card">
+              <div class="bot-info">
+                <span class="bot-name">🤖 Linear Constant Velocity Script Bot</span>
+                <span class="bot-desc">Constant machine velocity without biological micro-jitter &rarr; Rejected.</span>
+              </div>
+              <button class="btn-test-attack" onclick="triggerBotAttack('linear')">Simulate Attack</button>
+            </div>
+
+            <div class="bot-attack-card">
+              <div class="bot-info">
+                <span class="bot-name">⚡ Instant Coordinate Teleporter</span>
+                <span class="bot-desc">Submits in 10ms bypassing physics timing checks &rarr; Blocked.</span>
+              </div>
+              <button class="btn-test-attack" onclick="triggerBotAttack('teleport')">Simulate Attack</button>
+            </div>
+
+            <div class="bot-attack-card">
+              <div class="bot-info">
+                <span class="bot-name">📈 Synthetic Bezier Polynomial Bot</span>
+                <span class="bot-desc">Math-generated spline curve lacking natural jerk variance &rarr; Blocked.</span>
+              </div>
+              <button class="btn-test-attack" onclick="triggerBotAttack('bezier')">Simulate Attack</button>
+            </div>
+
+            <div class="bot-attack-card">
+              <div class="bot-info">
+                <span class="bot-name">🕵️ Headless Chrome Automation Mock</span>
+                <span class="bot-desc">Automated CDP driver profile (navigator.webdriver = true) &rarr; Blocked.</span>
+              </div>
+              <button class="btn-test-attack" onclick="triggerBotAttack('headless')">Simulate Attack</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB C: Live Audit Log -->
+        <div id="tab-audit" class="tab-content">
+          <div class="audit-terminal" id="audit-log">
+            <div class="audit-line">
+              <span class="audit-time">[INIT]</span>
+              <span class="audit-tag audit-info">SYSTEM</span>
+              <span>ShieldCaptcha Enterprise v4.0 Engine armed. Dual defense active.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Add to Your Project -->
+    <div id="integrate" class="section-header">
+      <div>
+        <div class="section-title">
+          <span>📦 Add to Your Project (Quick Integration)</span>
+        </div>
+        <div class="section-desc">Copy-paste ready snippets to add ShieldCaptcha into any frontend or backend:</div>
+      </div>
+    </div>
+
+    <div class="integration-grid">
+      <!-- Step 1: Frontend Client -->
+      <div class="code-card">
+        <div class="code-header">
+          <div class="code-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            Step 1: Frontend Embedding (HTML / React / Vanilla)
+          </div>
+          <button class="btn-copy" onclick="copySnippet('code-frontend')">📋 Copy Snippet</button>
+        </div>
+        <pre class="code-block" id="code-frontend"><code>&lt;!-- 1. Include the lightweight ShieldCaptcha SDK (Zero Dependencies) --&gt;
+&lt;script src="http://localhost:3000/captcha.js"&gt;&lt;/script&gt;
+
+&lt;!-- 2. Add container in your form --&gt;
+&lt;form id="login-form"&gt;
+  &lt;input type="email" name="email" placeholder="user@example.com" required&gt;
+  
+  &lt;!-- CAPTCHA Widget Mount Target --&gt;
+  &lt;div id="captcha-container"&gt;&lt;/div&gt;
+
+  &lt;button type="submit" id="btn-login" disabled&gt;Sign In&lt;/button&gt;
+&lt;/form&gt;
+
+&lt;script&gt;
+  let verifiedToken = '';
+
+  // Mount the widget (Choose 'checkbox', 'jigsaw', or 'adaptive')
+  ShieldCaptcha.mount(document.getElementById('captcha-container'), {
+    mode: 'checkbox', // 🔘 'checkbox' for 1-Click Turnstile, or 'jigsaw' for puzzle
+    onToken: (token) =&gt; {
+      verifiedToken = token;
+      document.getElementById('btn-login').disabled = false;
+      console.log('✓ Captcha Verified Token:', token);
+    },
+    onReset: () =&gt; {
+      verifiedToken = '';
+      document.getElementById('btn-login').disabled = true;
+    }
+  });
+
+  // Submit token to your backend
+  document.getElementById('login-form').onsubmit = async (e) =&gt; {
+    e.preventDefault();
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: e.target.email.value,
+        captchaToken: verifiedToken
+      })
+    });
+    const result = await res.json();
+    alert(result.success ? 'Logged In Successfully!' : 'Verification Failed');
+  };
+&lt;/script&gt;</code></pre>
+      </div>
+
+      <!-- Step 2: Backend Authorization Verification -->
+      <div class="code-card">
+        <div class="code-header">
+          <div class="code-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Step 2: Backend Token Verification (/api/siteverify)
+          </div>
+          <div class="code-lang-tabs">
+            <button class="lang-tab active" onclick="switchBackendLang('node')">Node.js / Express</button>
+            <button class="lang-tab" onclick="switchBackendLang('python')">Python (FastAPI / Flask)</button>
+            <button class="lang-tab" onclick="switchBackendLang('php')">PHP</button>
+            <button class="lang-tab" onclick="switchBackendLang('go')">Go</button>
+          </div>
+          <button class="btn-copy" onclick="copySnippet('code-backend')">📋 Copy Snippet</button>
+        </div>
+
+        <!-- Node.js Snippet -->
+        <pre class="code-block" id="backend-node"><code>// Node.js / Express Backend Verification
+const express = require('express');
+const app = express();
+app.use(express.json());
+
+const CAPTCHA_SERVER = 'http://localhost:3000';
+const SITE_SECRET = process.env.SITE_SECRET || 'sec_shield_live_...';
+
+app.post('/api/login', async (req, res) =&gt; {
+  const { email, captchaToken } = req.body;
+
+  // 1. Authorize token with ShieldCaptcha Server
+  const verifyRes = await fetch(`${CAPTCHA_SERVER}/api/siteverify`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${SITE_SECRET}`
+    },
+    body: JSON.stringify({
+      token: captchaToken,
+      ip: req.socket.remoteAddress // Cryptographic IP binding
+    })
+  });
+
+  const { success, score, error } = await verifyRes.json();
+  if (!success || score &lt; 30) {
+    return res.status(403).json({ error: 'CAPTCHA authorization failed: ' + error });
+  }
+
+  // 2. Token is authorized & consumed (Single-Use guaranteed)!
+  res.json({ success: true, message: `Welcome ${email}! (Trust Score: ${score})` });
+});
+
+app.listen(8080);</code></pre>
+
+        <!-- Python Snippet -->
+        <pre class="code-block" id="backend-python" style="display: none;"><code># Python / FastAPI Backend Verification
+from fastapi import FastAPI, HTTPException, Request
+import requests
+
+app = FastAPI()
+CAPTCHA_SERVER = "http://localhost:3000"
+SITE_SECRET = "sec_shield_live_..."
+
+@app.post("/api/login")
+async def login(req: Request, data: dict):
+    token = data.get("captchaToken")
+    client_ip = req.client.host
+
+    # 1. Authorize token with ShieldCaptcha Server
+    res = requests.post(
+        f"{CAPTCHA_SERVER}/api/siteverify",
+        headers={"Authorization": f"Bearer {SITE_SECRET}"},
+        json={"token": token, "ip": client_ip},
+        timeout=5
+    )
+    result = res.json()
+
+    if not result.get("success") or result.get("score", 0) &lt; 30:
+        raise HTTPException(status_code=403, detail="CAPTCHA authorization failed")
+
+    # 2. Proceed with authorized logic
+    return {"success": True, "user": data.get("email"), "score": result.get("score")}</code></pre>
+
+        <!-- PHP Snippet -->
+        <pre class="code-block" id="backend-php" style="display: none;"><code>&lt;?php
+// PHP Backend Token Verification
+$token = $_POST['captchaToken'];
+$siteSecret = 'sec_shield_live_...';
+$clientIp = $_SERVER['REMOTE_ADDR'];
+
+$ch = curl_init('http://localhost:3000/api/siteverify');
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'Content-Type: application/json',
+    'Authorization: Bearer ' . $siteSecret
+]);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+    'token' =&gt; $token,
+    'ip' =&gt; $clientIp
+]));
+
+$response = json_decode(curl_exec($ch), true);
+curl_close($ch);
+
+if (!$response['success'] || $response['score'] &lt; 30) {
+    http_response_code(403);
+    echo json_encode(['error' =&gt; 'CAPTCHA verification failed']);
+    exit;
+}
+
+echo json_encode(['success' =&gt; true, 'score' =&gt; $response['score']]);
+?&gt;</code></pre>
+
+        <!-- Go Snippet -->
+        <pre class="code-block" id="backend-go" style="display: none;"><code>// Go (Golang) Backend Verification
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"net/http"
+)
+
+func verifyCaptcha(token, clientIP, secret string) (bool, int) {
+	body, _ := json.Marshal(map[string]string{
+		"token": token,
+		"ip":    clientIP,
+	})
+
+	req, _ := http.NewRequest("POST", "http://localhost:3000/api/siteverify", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+secret)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil || resp.StatusCode != 200 {
+		return false, 0
+	}
+	defer resp.Body.Close()
+
+	var result struct {
+		Success bool `json:"success"`
+		Score   int  `json:"score"`
+	}
+	json.NewDecoder(resp.Body).Decode(&result)
+	return result.Success, result.Score
+}</code></pre>
+      </div>
+    </div>
+
+    <!-- Section 3: Architecture & Documentation -->
+    <div id="docs" class="section-header">
+      <div>
+        <div class="section-title">
+          <span>📚 Architecture & Security Highlights</span>
+        </div>
+        <div class="section-desc">Key defense layers designed into ShieldCaptcha Enterprise v4.0:</div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 30px;">
+      <div class="panel" style="padding: 18px;">
+        <div style="font-size: 14px; font-weight: 700; color: #818cf8; margin-bottom: 8px;">1. Bit-Level PoW Engine</div>
+        <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
+          Background WebWorker calculates leading-zero SHA-256 hashes in 18ms. Completely exhausts headless scrapers while imposing zero perceptible delay on humans.
+        </p>
+      </div>
+
+      <div class="panel" style="padding: 18px;">
+        <div style="font-size: 14px; font-weight: 700; color: #38bdf8; margin-bottom: 8px;">2. Flash & Hogan Kinematics</div>
+        <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
+          Models third-order velocity derivatives (jerk) and physiological micro-tremor harmonics. Distinguishes natural human hand drag from artificial robotic splines.
+        </p>
+      </div>
+
+      <div class="panel" style="padding: 18px;">
+        <div style="font-size: 14px; font-weight: 700; color: #34d399; margin-bottom: 8px;">3. Single-Use HMAC Authorization</div>
+        <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
+          Issues cryptographically signed tokens bound to client IP. Atomic <code>jti</code> consumption guarantees zero replay attacks on protected APIs.
+        </p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      ShieldCaptcha Enterprise v4.0 • Dual-Defense Bot Protection Architecture & Developer Portal
+    </footer>
+  </div>
+
+  <script src="/captcha.js"></script>
+  <script>
+    let currentToken = '';
+    let captchaController = null;
+    let activeMode = 'checkbox';
+
+    const btnSubmit = document.getElementById('btn-submit');
+    const tokenBox = document.getElementById('token-box');
+    const tokenStr = document.getElementById('token-str');
+    const auditLog = document.getElementById('audit-log');
+    const radarCanvas = document.getElementById('radar-canvas');
+    const radarCtx = radarCanvas.getContext('2d');
+
+    function setupCanvasDPI() {
+      const rect = radarCanvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      radarCanvas.width = rect.width * dpr;
+      radarCanvas.height = rect.height * dpr;
+      radarCtx.scale(dpr, dpr);
+    }
+    setupCanvasDPI();
+    window.addEventListener('resize', setupCanvasDPI);
+
+    function logEvent(type, tag, message) {
+      const now = new Date();
+      const timeStr = now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0');
+      const line = document.createElement('div');
+      line.className = 'audit-line';
+
+      let tagClass = 'audit-info';
+      if (type === 'pass') tagClass = 'audit-pass';
+      if (type === 'block') tagClass = 'audit-block';
+
+      line.innerHTML = `
+        <span class="audit-time">[${timeStr}]</span>
+        <span class="audit-tag ${tagClass}">${tag}</span>
+        <span>${message}</span>
+      `;
+      auditLog.appendChild(line);
+      auditLog.scrollTop = auditLog.scrollHeight;
+    }
+
+    function renderRadar(point) {
+      const w = radarCanvas.getBoundingClientRect().width;
+      const h = radarCanvas.getBoundingClientRect().height;
+
+      radarCtx.fillStyle = 'rgba(9, 14, 26, 0.25)';
+      radarCtx.fillRect(0, 0, w, h);
+
+      radarCtx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+      radarCtx.lineWidth = 1;
+      for (let x = 0; x < w; x += 30) {
+        radarCtx.beginPath();
+        radarCtx.moveTo(x, 0);
+        radarCtx.lineTo(x, h);
+        radarCtx.stroke();
+      }
+
+      if (point && point.trail && point.trail.length > 1) {
+        radarCtx.beginPath();
+        radarCtx.strokeStyle = '#38bdf8';
+        radarCtx.lineWidth = 2.5;
+        radarCtx.shadowColor = '#38bdf8';
+        radarCtx.shadowBlur = 8;
+
+        const pts = point.trail;
+        for (let i = 0; i < pts.length; i++) {
+          const mapX = (pts[i][0] / 320) * (w - 40) + 20;
+          const mapY = (pts[i][1] / 50) * (h - 40) + 20;
+          if (i === 0) radarCtx.moveTo(mapX, mapY);
+          else radarCtx.lineTo(mapX, mapY);
+        }
+        radarCtx.stroke();
+        radarCtx.shadowBlur = 0;
+
+        const tipX = (pts[pts.length - 1][0] / 320) * (w - 40) + 20;
+        const tipY = (pts[pts.length - 1][1] / 50) * (h - 40) + 20;
+        radarCtx.fillStyle = '#10b981';
+        radarCtx.beginPath();
+        radarCtx.arc(tipX, tipY, 4, 0, Math.PI * 2);
+        radarCtx.fill();
+
+        const yCoords = pts.map(p => p[1]);
+        const uniqueY = new Set(yCoords).size;
+        document.getElementById('diag-tremor').textContent = `● Tremor (${uniqueY} harmonics)`;
+        document.getElementById('diag-tremor').style.color = uniqueY >= 2 ? '#34d399' : '#f59e0b';
+      }
+    }
+    renderRadar(null);
+
+    // Mount Widget
+    captchaController = ShieldCaptcha.mount(document.getElementById('sc-mount-point'), {
+      mode: activeMode,
+      onToken: (token, meta) => {
+        currentToken = token;
+        btnSubmit.disabled = false;
+        tokenBox.style.display = 'block';
+        tokenStr.textContent = token;
+
+        logEvent('pass', 'AUTHORIZED', `Human verified with score ${meta.score || 95} (mode: ${meta.mode || 'hybrid'})`);
+        fetchStats();
+      },
+      onReset: () => {
+        currentToken = '';
+        btnSubmit.disabled = true;
+        tokenBox.style.display = 'none';
+      },
+      onTrajectory: pt => renderRadar(pt)
+    });
+
+    // Mode Switcher Buttons
+    document.querySelectorAll('.mode-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.mode-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        activeMode = pill.getAttribute('data-mode');
+        logEvent('info', 'MODE_SWITCH', `Switched mode to: ${activeMode}`);
+        captchaController.switchMode(activeMode);
+      });
+    });
+
+    // Form Submission
+    btnSubmit.onclick = async () => {
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = 'Authorizing...';
+
+      try {
+        const res = await fetch('/api/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: document.getElementById('email').value,
+            captcha: currentToken
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          alert('🎉 Authorized! ' + data.message + ' (Trust Score: ' + data.trustScore + ', Mode: ' + data.authMode + ')');
+          logEvent('pass', 'PROTECTED_CALL', `Access granted for ${document.getElementById('email').value}`);
+        } else {
+          alert('❌ Authorization Failed: ' + data.error);
+          logEvent('block', 'REJECTED', `Signup rejected: ${data.error}`);
+        }
+      } catch {
+        alert('Request failed');
+      }
+
+      btnSubmit.textContent = 'Authenticate & Create Account';
+      captchaController.reset();
+      fetchStats();
+    };
+
+    // Bot attack simulator button handler
+    async function triggerBotAttack(type) {
+      logEvent('info', 'ATTACK_SIM', `Launching automated ${type} attack simulation...`);
+      const res = await captchaController.simulateBot(type);
+      if (res.ok) {
+        logEvent('pass', 'UNEXPECTED', `Attack passed`);
+      } else {
+        logEvent('block', 'BLOCKED', `Successfully blocked: ${res.reason}`);
+      }
+      fetchStats();
+    }
+
+    // Tabs switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.getAttribute('data-tab')).classList.add('active');
+      });
+    });
+
+    // Language switcher in backend snippet card
+    let activeBackendLang = 'node';
+    function switchBackendLang(lang) {
+      activeBackendLang = lang;
+      document.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      ['node', 'python', 'php', 'go'].forEach(l => {
+        const el = document.getElementById('backend-' + l);
+        if (el) el.style.display = l === lang ? 'block' : 'none';
+      });
+    }
+
+    // Copy Snippet Helper
+    function copySnippet(targetId) {
+      let text = '';
+      if (targetId === 'code-frontend') {
+        text = document.getElementById('code-frontend').innerText;
+      } else if (targetId === 'code-backend') {
+        text = document.getElementById('backend-' + activeBackendLang).innerText;
+      }
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = event.target;
+        const orig = btn.innerText;
+        btn.innerText = '✓ Copied!';
+        setTimeout(() => btn.innerText = orig, 2000);
+      });
+    }
+
+    // Periodically fetch live stats
+    async function fetchStats() {
+      try {
+        const res = await fetch('/api/stats');
+        const data = await res.json();
+        document.getElementById('metric-challenges').textContent = data.totalChallenges;
+        document.getElementById('metric-humans').textContent = data.verifiedHumans;
+        document.getElementById('metric-bots').textContent = data.blockedBots;
+        document.getElementById('metric-escalations').textContent = data.escalatedToPuzzle;
+        if (data.siteKey) {
+          document.getElementById('site-key-badge').textContent = 'SITE_KEY: ' + data.siteKey.slice(0, 16) + '…';
+        }
+      } catch {}
+    }
+
+    fetchStats();
+    setInterval(fetchStats, 5000);
+  </script>
+</body>
+</html>

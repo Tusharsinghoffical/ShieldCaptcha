@@ -1,0 +1,10 @@
+{
+  "name": "shield-captcha-engine",
+  "version": "4.0.0",
+  "description": "Zero-dependency Core Enterprise Defense Engine",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  }
+}

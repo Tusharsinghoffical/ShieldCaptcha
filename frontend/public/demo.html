@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Protected Sign In — ShieldCaptcha Enterprise v4.0</title>
+  <link rel="icon" href="/favicon.ico">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #f8fafc;
+      background-image:
+        radial-gradient(circle at 10% 15%, rgba(99, 102, 241, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 85%, rgba(56, 189, 248, 0.06) 0%, transparent 40%);
+      color: #0f172a;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px 16px;
+    }
+    .card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      padding: 28px 24px;
+      border-radius: 20px;
+      box-shadow: 0 12px 35px -4px rgba(15, 23, 42, 0.08);
+      width: 100%;
+      max-width: 420px;
+      position: relative;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 14px;
+    }
+    .logo-img {
+      width: 38px;
+      height: 38px;
+      object-fit: contain;
+    }
+    h2 { font-size: 18px; font-weight: 800; color: #0f172a; letter-spacing: -0.01em; }
+    .badge { font-size: 11px; color: #4f46e5; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Step Indicator Bar */
+    .step-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding: 0 8px;
+    }
+    .step-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+    .step-circle {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      background: #f1f5f9;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+      transition: all 0.3s;
+    }
+    .step-circle.active {
+      background: #4f46e5;
+      color: #fff;
+      border-color: #4f46e5;
+      box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35);
+    }
+    .step-circle.done {
+      background: #10b981;
+      color: #fff;
+      border-color: #10b981;
+    }
+    .step-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .step-item.active .step-label { color: #4338ca; }
+    .step-item.done .step-label { color: #059669; }
+    .step-divider {
+      flex: 1;
+      height: 2px;
+      background: #e2e8f0;
+      margin: 0 8px;
+      margin-bottom: 15px;
+      transition: background 0.3s;
+    }
+    .step-divider.active {
+      background: #10b981;
+    }
+
+    /* Mode Switcher Tabs */
+    .mode-bar {
+      display: flex;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 3px;
+      gap: 4px;
+      margin-bottom: 18px;
+    }
+    .mode-btn {
+      flex: 1;
+      padding: 8px 4px;
+      border: none;
+      border-radius: 9px;
+      background: transparent;
+      color: #64748b;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      text-align: center;
+    }
+    .mode-btn.active {
+      background: #ffffff;
+      color: #4338ca;
+      font-weight: 700;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e2e8f0;
+    }
+    .mode-btn:hover:not(.active) {
+      color: #0f172a;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+    input[type="email"] {
+      width: 100%;
+      padding: 11px 13px;
+      border-radius: 11px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #0f172a;
+      outline: none;
+      font-size: 13px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    input[type="email"]:focus {
+      border-color: #6366f1;
+      background: #ffffff;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: none;
+      background: #4f46e5;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 2px 10px rgba(79, 70, 229, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: #4338ca;
+      transform: translateY(-1px);
+    }
+    .btn-primary:disabled {
+      background: #e2e8f0;
+      color: #94a3b8;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+    .btn-success {
+      background: #059669;
+      box-shadow: 0 2px 10px rgba(5, 150, 105, 0.3);
+    }
+    .btn-success:hover:not(:disabled) {
+      background: #047857;
+    }
+
+    .secondary-link {
+      background: transparent;
+      border: none;
+      color: #4f46e5;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    /* Mount Point Container */
+    #captcha-box {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      min-height: 80px;
+    }
+
+    .step-section {
+      display: none;
+    }
+    .step-section.active {
+      display: block;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Step 3 Confirmation Box */
+    .confirm-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 12px;
+      margin-bottom: 16px;
+      text-align: left;
+    }
+    .confirm-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .confirm-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .confirm-label { color: #64748b; }
+    .confirm-val { font-weight: 600; color: #0f172a; }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      font-size: 12px;
+      color: #64748b;
+      text-decoration: none;
+      margin-top: 18px;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: #0f172a; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="header">
+      <img src="/logo.png?v=5" alt="ShieldCaptcha" class="logo-img">
+      <div>
+        <h2>Protected Sign In</h2>
+        <span class="badge">Enterprise Multi-Step Defense v4.0</span>
+      </div>
+    </div>
+
+    <!-- Step Bar -->
+    <div class="step-bar">
+      <div class="step-item active" id="step-ind-1">
+        <div class="step-circle active" id="circle-1">1</div>
+        <span class="step-label">Account</span>
+      </div>
+      <div class="step-divider" id="div-1"></div>
+      <div class="step-item" id="step-ind-2">
+        <div class="step-circle" id="circle-2">2</div>
+        <span class="step-label">Verify</span>
+      </div>
+      <div class="step-divider" id="div-2"></div>
+      <div class="step-item" id="step-ind-3">
+        <div class="step-circle" id="circle-3">3</div>
+        <span class="step-label">Confirm</span>
+      </div>
+    </div>
+
+    <!-- ================= STEP 1: Account Input & Mode ================= -->
+    <div id="step-1" class="step-section active">
+      <form id="step-1-form">
+        <div class="form-group">
+          <label>Account Work Email</label>
+          <input type="email" id="email" placeholder="developer@enterprise.io" value="developer@enterprise.io" required autofocus>
+          <span style="font-size: 11px; color: #64748b; margin-top: 4px; display: block;">
+            Step 1 of 3: Provide credentials to initialize session.
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label>Select Verification Defense Mode</label>
+          <div class="mode-bar">
+            <button type="button" class="mode-btn active" data-mode="checkbox">🔘 1-Click Check</button>
+            <button type="button" class="mode-btn" data-mode="jigsaw">🧩 Jigsaw Puzzle</button>
+            <button type="button" class="mode-btn" data-mode="adaptive">⚡ Auto Step-Up</button>
+          </div>
+          <span id="mode-desc" style="font-size: 11px; color: #64748b; display: block;">
+            ⚡ Fast Proof-of-Work Turnstile verification (under 20ms).
+          </span>
+        </div>
+
+        <button type="submit" class="btn-primary" style="margin-top: 8px;">
+          <span>Continue to Security Check</span> →
+        </button>
+      </form>
+    </div>
+
+    <!-- ================= STEP 2: Biomechanical Verification ================= -->
+    <div id="step-2" class="step-section">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
+        <span style="color: #475569;">Target: <strong id="step2-email" style="color: #0f172a;"></strong></span>
+        <button type="button" class="secondary-link" id="btn-back-step1">Change</button>
+      </div>
+
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px 12px; margin-bottom: 16px; text-align: center;">
+        <span id="step2-mode-title" style="font-size: 12px; font-weight: 600; color: #334155; display: block; margin-bottom: 12px;">
+          Complete Security Challenge:
+        </span>
+        <div id="captcha-box"></div>
+      </div>
+
+      <div id="step2-actions">
+        <button type="button" class="btn-primary btn-success" id="btn-submit-step2" disabled>
+          Complete Verification Above to Continue
+        </button>
+        <button type="button" class="back-link" id="btn-cancel-step2" style="background: none; border: none; cursor: pointer; width: 100%;">
+          ← Back to Account Details
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= STEP 3: Confirmation ================= -->
+    <div id="step-3" class="step-section">
+      <div id="confirm-content" style="text-align: center;">
+        <div style="width: 52px; height: 52px; border-radius: 50%; background: #ecfdf5; border: 1px solid #a7f3d0; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #059669; margin: 0 auto 12px;">
+          ✓
+        </div>
+        <h3 style="font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 4px;">Access Successfully Authorized!</h3>
+        <p style="font-size: 11px; color: #059669; font-weight: 600; margin-bottom: 16px;">
+          Cryptographically Signed & Consumed Single-Use Token
+        </p>
+
+        <div class="confirm-card">
+          <div class="confirm-row">
+            <span class="confirm-label">Authenticated Account:</span>
+            <span class="confirm-val" id="res-email">developer@enterprise.io</span>
+          </div>
+          <div class="confirm-row">
+            <span class="confirm-label">Defense Mode Used:</span>
+            <span class="confirm-val" id="res-mode" style="color: #4338ca; text-transform: capitalize;">checkbox_pow</span>
+          </div>
+          <div class="confirm-row">
+            <span class="confirm-label">Biomechanical Trust Score:</span>
+            <span class="confirm-val" id="res-score" style="color: #059669;">95 / 100</span>
+          </div>
+          <div class="confirm-row">
+            <span class="confirm-label">Engine Response:</span>
+            <span class="confirm-val" style="color: #059669;">✓ 200 OK Authorized</span>
+          </div>
+        </div>
+
+        <button type="button" class="btn-primary" id="btn-restart" style="background: #ffffff; color: #334155; border: 1px solid #cbd5e1; box-shadow: none;">
+          🔄 Verify Another Account (Restart)
+        </button>
+      </div>
+    </div>
+
+    <a href="/" class="back-link">← Return to Enterprise Portal</a>
+  </div>
+
+  <!-- Include ShieldCaptcha Universal Client SDK -->
+  <script src="/captcha.js"></script>
+  <script>
+    let verifiedToken = '';
+    let currentMode = 'checkbox';
+    let captchaController = null;
+    let userEmail = 'developer@enterprise.io';
+
+    const modeDescs = {
+      checkbox: '⚡ Fast Proof-of-Work Turnstile verification (under 20ms).',
+      jigsaw: '🧩 Interactive magnetic jigsaw puzzle slider challenge.',
+      adaptive: '🛡️ Smart automatic risk-based security escalation.'
+    };
+
+    function setStep(stepNum) {
+      document.querySelectorAll('.step-section').forEach(el => el.classList.remove('active'));
+      document.getElementById('step-' + stepNum).classList.add('active');
+
+      for (let i = 1; i <= 3; i++) {
+        const circle = document.getElementById('circle-' + i);
+        const ind = document.getElementById('step-ind-' + i);
+        circle.classList.remove('active', 'done');
+        ind.classList.remove('active', 'done');
+
+        if (i < stepNum) {
+          circle.classList.add('done');
+          circle.innerHTML = '✓';
+          ind.classList.add('done');
+        } else if (i === stepNum) {
+          circle.classList.add('active');
+          circle.innerHTML = i;
+          ind.classList.add('active');
+        } else {
+          circle.innerHTML = i;
+        }
+      }
+
+      document.getElementById('div-1').classList.toggle('active', stepNum > 1);
+      document.getElementById('div-2').classList.toggle('active', stepNum > 2);
+    }
+
+    const modeButtons = document.querySelectorAll('.mode-btn');
+    modeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentMode = btn.getAttribute('data-mode');
+        document.getElementById('mode-desc').textContent = modeDescs[currentMode] || '';
+      });
+    });
+
+    document.getElementById('step-1-form').onsubmit = (e) => {
+      e.preventDefault();
+      userEmail = document.getElementById('email').value;
+      document.getElementById('step2-email').textContent = userEmail;
+      
+      const modeNames = { checkbox: '1-Click PoW', jigsaw: 'Jigsaw Slider', adaptive: 'Auto Step-Up' };
+      document.getElementById('step2-mode-title').textContent = `Complete Security Challenge (${modeNames[currentMode]}):`;
+
+      verifiedToken = '';
+      const submitBtn = document.getElementById('btn-submit-step2');
+      submitBtn.disabled = true;
+      submitBtn.className = 'btn-primary btn-success';
+      submitBtn.innerHTML = 'Complete Verification Above to Continue';
+
+      setStep(2);
+      mountWidget(currentMode);
+    };
+
+    document.getElementById('btn-back-step1').onclick = () => setStep(1);
+    document.getElementById('btn-cancel-step2').onclick = () => setStep(1);
+
+    function mountWidget(mode) {
+      const box = document.getElementById('captcha-box');
+      box.innerHTML = '';
+      verifiedToken = '';
+
+      captchaController = ShieldCaptcha.mount(box, {
+        mode: mode,
+        onToken: (token, meta) => {
+          verifiedToken = token;
+          const submitBtn = document.getElementById('btn-submit-step2');
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<span>Submit & Authorize Session</span> →';
+        },
+        onReset: () => {
+          verifiedToken = '';
+          const submitBtn = document.getElementById('btn-submit-step2');
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = 'Complete Verification Above to Continue';
+        }
+      });
+    }
+
+    document.getElementById('btn-submit-step2').onclick = async () => {
+      if (!verifiedToken) return;
+
+      const submitBtn = document.getElementById('btn-submit-step2');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>Authenticating with Server...</span>';
+
+      try {
+        const res = await fetch('/api/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: userEmail, captcha: verifiedToken })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          document.getElementById('res-email').textContent = userEmail;
+          document.getElementById('res-mode').textContent = data.authMode || currentMode;
+          document.getElementById('res-score').textContent = (data.trustScore || 95) + ' / 100';
+          setStep(3);
+        } else {
+          alert('Authorization Denied: ' + (data.error || 'Token expired or invalid'));
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<span>Submit & Authorize Session</span> →';
+        }
+      } catch (err) {
+        alert('Network verification error connecting to /api/signup backend.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>Submit & Authorize Session</span> →';
+      }
+    };
+
+    document.getElementById('btn-restart').onclick = () => {
+      verifiedToken = '';
+      setStep(1);
+    };
+  </script>
+</body>
+</html>

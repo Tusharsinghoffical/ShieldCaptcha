@@ -1,0 +1,25 @@
+{
+  "name": "shield-captcha-enterprise",
+  "version": "4.0.0",
+  "private": true,
+  "description": "Unified Dual-Defense Bot Engine & Developer Portal (Next.js, Node.js, Python, TypeScript)",
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "dev:backend": "node backend-node/server.js",
+    "build": "npm --prefix frontend run build",
+    "start": "npm --prefix frontend start",
+    "start:backend": "node backend-node/server.js"
+  },
+  "keywords": [
+    "captcha",
+    "turnstile",
+    "jigsaw-puzzle",
+    "nextjs",
+    "typescript",
+    "bot-defense",
+    "proof-of-work",
+    "kinematics"
+  ],
+  "author": "ShieldCaptcha Enterprise Team",
+  "license": "MIT"
+}
