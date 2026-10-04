@@ -1,7 +1,21 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Shield, Zap, Lock, Activity, Users, Flame } from "lucide-react";
+import Link from "next/link";
+import {
+  ShieldCheck,
+  Zap,
+  Activity,
+  Users,
+  Flame,
+  ArrowRight,
+  Copy,
+  Check,
+  Play,
+  KeyRound,
+  Lock,
+  Layers
+} from "lucide-react";
 import { motion } from "framer-motion";
 
 interface StatsData {
@@ -21,6 +35,7 @@ export function Hero() {
     escalatedToPuzzle: 1,
     uptimeSec: 420,
   });
+  const [copiedNpm, setCopiedNpm] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -40,96 +55,185 @@ export function Hero() {
     return () => clearInterval(interval);
   }, []);
 
+  const copyNpmCommand = () => {
+    navigator.clipboard.writeText("npm i @shieldcaptcha/client");
+    setCopiedNpm(true);
+    setTimeout(() => setCopiedNpm(false), 2000);
+  };
+
   return (
-    <div className="text-center pt-8 pb-10 max-w-4xl mx-auto px-4">
-      {/* Center Emblem Logo */}
-      <div className="relative mx-auto mb-5 w-24 h-24 flex items-center justify-center group">
-        <img
-          src="/logo.png?v=5"
-          alt="ShieldCaptcha Official Logo"
-          width={96}
-          height={96}
-          className="relative w-24 h-24 object-contain transition-transform duration-300 group-hover:scale-105"
-        />
+    <div className="relative pt-6 pb-12 max-w-5xl mx-auto px-4">
+      {/* Top Ambient Glow Pill */}
+      <div className="flex flex-col items-center text-center">
+        {/* Logo with Soft Ethereal Glow */}
+        <div className="relative mb-5 flex items-center justify-center">
+          <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500/20 via-sky-500/20 to-emerald-500/20 rounded-full blur-xl opacity-70 group-hover:opacity-100 transition duration-700 pointer-events-none" />
+          <img
+            src="/logo.png?v=5"
+            alt="ShieldCaptcha Brand Emblem"
+            width={88}
+            height={88}
+            className="relative w-20 h-20 sm:w-22 sm:h-22 object-contain drop-shadow-md transition-transform duration-300 hover:scale-105"
+          />
+        </div>
+
+        {/* Status Badge */}
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-100/90 border border-slate-200/90 text-slate-700 text-xs font-semibold mb-5 shadow-xs backdrop-blur-sm"
+        >
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+          </span>
+          <span className="text-slate-800 font-bold tracking-tight">ShieldCaptcha v4.2 Enterprise</span>
+          <span className="text-slate-300">|</span>
+          <span className="text-slate-500 text-[11px] font-medium">Dual-Layer Zero-Cookie Defense</span>
+        </motion.div>
+
+        {/* Primary Headline */}
+        <motion.h1
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 leading-[1.12] max-w-4xl mb-5"
+        >
+          Fast for Real Humans. <br />
+          <span className="bg-gradient-to-r from-indigo-600 via-sky-600 to-emerald-600 bg-clip-text text-transparent">
+            Impossible for Automated Bots.
+          </span>
+        </motion.h1>
+
+        {/* Lead Subtitle */}
+        <motion.p
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.18 }}
+          className="text-slate-600 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed mb-8"
+        >
+          Stop credential stuffing, AI scrapers, and headless browser bots before they touch your server.
+          Combines multi-threaded <strong>SHA-256 Proof-of-Work</strong>, <strong>biomechanical kinematics</strong>, and
+          cryptographic <strong>HMAC single-use tokens</strong> with zero tracking cookies.
+        </motion.p>
+
+        {/* Action CTAs & Quick Install Command */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="flex flex-wrap items-center justify-center gap-3.5 mb-10 w-full"
+        >
+          <Link
+            href="/api-keys"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-indigo-500/25 transition-all hover:shadow-lg hover:shadow-indigo-500/30"
+          >
+            <KeyRound className="w-4 h-4" />
+            <span>Generate Free API Keys</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+
+          <a
+            href="#trial"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-bold text-xs sm:text-sm border border-slate-300/80 shadow-xs hover:border-slate-400 transition-all"
+          >
+            <Play className="w-3.5 h-3.5 text-indigo-600 fill-indigo-600" />
+            <span>Try Interactive Trial</span>
+          </a>
+
+          {/* NPM Package Pill */}
+          <div className="flex items-center gap-2 bg-slate-900 text-slate-300 px-3.5 py-2.5 rounded-xl border border-slate-800 font-mono text-xs shadow-xs">
+            <span className="text-slate-500 select-none">$</span>
+            <span className="text-slate-200">npm i @shieldcaptcha/client</span>
+            <button
+              type="button"
+              onClick={copyNpmCommand}
+              title="Copy to clipboard"
+              className="ml-1.5 p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            >
+              {copiedNpm ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Live Metrics Grid Bento */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.32 }}
+          className="w-full grid grid-cols-2 sm:grid-cols-5 gap-3 text-left"
+        >
+          {/* Card 1: Challenges */}
+          <div className="group relative bg-white rounded-xl p-4 border border-slate-200/90 shadow-xs hover:border-sky-300 hover:shadow-md transition-all flex flex-col justify-between overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-sky-500 opacity-60 group-hover:opacity-100 transition-opacity" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between mb-2">
+              <span>Challenges</span>
+              <Activity className="w-3.5 h-3.5 text-sky-600" />
+            </span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl sm:text-3xl font-black font-mono text-slate-900">{stats.totalChallenges}</span>
+              <span className="text-[10px] text-sky-600 font-bold">issued</span>
+            </div>
+            <span className="text-[10px] text-slate-400 mt-1">PoW + Jigsaw pipeline</span>
+          </div>
+
+          {/* Card 2: Verified */}
+          <div className="group relative bg-white rounded-xl p-4 border border-slate-200/90 shadow-xs hover:border-emerald-300 hover:shadow-md transition-all flex flex-col justify-between overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-emerald-500 opacity-60 group-hover:opacity-100 transition-opacity" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between mb-2">
+              <span>Verified</span>
+              <Users className="w-3.5 h-3.5 text-emerald-600" />
+            </span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-700">{stats.verifiedHumans}</span>
+              <span className="text-[10px] text-emerald-600 font-bold">humans</span>
+            </div>
+            <span className="text-[10px] text-slate-400 mt-1">100% genuine pass rate</span>
+          </div>
+
+          {/* Card 3: Blocked */}
+          <div className="group relative bg-white rounded-xl p-4 border border-slate-200/90 shadow-xs hover:border-rose-300 hover:shadow-md transition-all flex flex-col justify-between overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-rose-500 opacity-60 group-hover:opacity-100 transition-opacity" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between mb-2">
+              <span>Blocked Bots</span>
+              <Flame className="w-3.5 h-3.5 text-rose-600" />
+            </span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl sm:text-3xl font-black font-mono text-rose-700">{stats.blockedBots}</span>
+              <span className="text-[10px] text-rose-600 font-bold">stopped</span>
+            </div>
+            <span className="text-[10px] text-slate-400 mt-1">Zero automated bypasses</span>
+          </div>
+
+          {/* Card 4: Escalations */}
+          <div className="group relative bg-white rounded-xl p-4 border border-slate-200/90 shadow-xs hover:border-purple-300 hover:shadow-md transition-all flex flex-col justify-between overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-purple-500 opacity-60 group-hover:opacity-100 transition-opacity" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between mb-2">
+              <span>Escalated</span>
+              <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
+            </span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl sm:text-3xl font-black font-mono text-purple-700">{stats.escalatedToPuzzle}</span>
+              <span className="text-[10px] text-purple-600 font-bold">puzzles</span>
+            </div>
+            <span className="text-[10px] text-slate-400 mt-1">Adaptive risk trigger</span>
+          </div>
+
+          {/* Card 5: Latency */}
+          <div className="group relative bg-white col-span-2 sm:col-span-1 rounded-xl p-4 border border-slate-200/90 shadow-xs hover:border-indigo-300 hover:shadow-md transition-all flex flex-col justify-between overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-indigo-500 opacity-60 group-hover:opacity-100 transition-opacity" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between mb-2">
+              <span>Avg Latency</span>
+              <Zap className="w-3.5 h-3.5 text-indigo-600" />
+            </span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl sm:text-3xl font-black font-mono text-indigo-700">18ms</span>
+              <span className="text-[10px] text-indigo-600 font-bold">fast</span>
+            </div>
+            <span className="text-[10px] text-slate-400 mt-1">Multi-threaded Web Worker</span>
+          </div>
+        </motion.div>
       </div>
-
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold uppercase tracking-wider mb-5 shadow-xs"
-      >
-        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-        <span>Next.js 16 & TypeScript Bot Defense Engine</span>
-      </motion.div>
-
-      <motion.h1
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="text-3xl md:text-5xl lg:text-5xl font-extrabold tracking-tight text-slate-900 leading-[1.15] mb-4"
-      >
-        Fast for Real Humans. <br />
-        <span className="bg-gradient-to-r from-indigo-600 via-sky-600 to-emerald-600 bg-clip-text text-transparent">
-          Impossible for Automated Bots.
-        </span>
-      </motion.h1>
-
-      <motion.p
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="text-slate-600 text-sm md:text-base max-w-2xl mx-auto leading-relaxed mb-8"
-      >
-        ShieldCaptcha protects your login and registration forms using <strong>1-Click Proof-of-Work checks</strong> and <strong>Anti-Bot Jigsaw Puzzles</strong>. Zero tracking cookies, zero dependencies, and instant verification.
-      </motion.p>
-
-      {/* Metrics Bar */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="grid grid-cols-2 sm:grid-cols-5 gap-3 max-w-4xl mx-auto text-left"
-      >
-        <div className="bg-white rounded-xl p-3.5 flex flex-col gap-1 border border-slate-200 shadow-xs">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-            <Activity className="w-3.5 h-3.5 text-sky-600" />
-            Challenges
-          </span>
-          <span className="text-2xl font-bold font-mono text-sky-700">{stats.totalChallenges}</span>
-        </div>
-
-        <div className="bg-white rounded-xl p-3.5 flex flex-col gap-1 border border-slate-200 shadow-xs">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-            <Users className="w-3.5 h-3.5 text-emerald-600" />
-            Verified
-          </span>
-          <span className="text-2xl font-bold font-mono text-emerald-700">{stats.verifiedHumans}</span>
-        </div>
-
-        <div className="bg-white rounded-xl p-3.5 flex flex-col gap-1 border border-slate-200 shadow-xs">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-            <Flame className="w-3.5 h-3.5 text-rose-600" />
-            Blocked Bots
-          </span>
-          <span className="text-2xl font-bold font-mono text-rose-700">{stats.blockedBots}</span>
-        </div>
-
-        <div className="bg-white rounded-xl p-3.5 flex flex-col gap-1 border border-slate-200 shadow-xs">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-            <Shield className="w-3.5 h-3.5 text-purple-600" />
-            Escalations
-          </span>
-          <span className="text-2xl font-bold font-mono text-purple-700">{stats.escalatedToPuzzle}</span>
-        </div>
-
-        <div className="bg-white col-span-2 sm:col-span-1 rounded-xl p-3.5 flex flex-col gap-1 border border-slate-200 shadow-xs">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-            <Zap className="w-3.5 h-3.5 text-indigo-600" />
-            Avg Latency
-          </span>
-          <span className="text-2xl font-bold font-mono text-indigo-700">18ms</span>
-        </div>
-      </motion.div>
     </div>
   );
 }
