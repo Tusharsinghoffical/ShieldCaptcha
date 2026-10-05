@@ -1057,6 +1057,9 @@
               setTopGuide('warning', '⚠️ Step-up check: Piece ko slot me match karein');
             });
           }, 450);
+          return;
+        }
+
         if (result.error === 'ip_temporarily_locked' || verifyRes.status === 429) {
           chkSpinner.style.display = 'none';
           showLockout(result.retryAfterSec || 300, result.message);
