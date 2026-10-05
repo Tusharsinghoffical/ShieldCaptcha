@@ -4,8 +4,11 @@ import { Metadata } from "next";
 import { Check } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — ShieldCaptcha Enterprise",
+  title: "Privacy Policy",
   description: "How ShieldCaptcha handles your data: zero tracking cookies, no personal data storage, fully GDPR-ready.",
+  alternates: {
+    canonical: "/privacy",
+  },
 };
 
 export default function PrivacyPage() {

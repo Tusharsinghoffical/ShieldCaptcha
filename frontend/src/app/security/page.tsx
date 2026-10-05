@@ -4,8 +4,11 @@ import { Metadata } from "next";
 import { CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Security Policy — ShieldCaptcha Enterprise",
+  title: "Security Policy & Architecture",
   description: "ShieldCaptcha security architecture, cryptographic design, responsible disclosure, and vulnerability reporting.",
+  alternates: {
+    canonical: "/security",
+  },
 };
 
 export default function SecurityPage() {

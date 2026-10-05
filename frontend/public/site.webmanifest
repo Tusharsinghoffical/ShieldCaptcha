@@ -1,0 +1,27 @@
+{
+  "name": "ShieldCaptcha Enterprise",
+  "short_name": "ShieldCaptcha",
+  "description": "Zero-dependency, multi-modal autonomous bot defense and enterprise Proof-of-Work platform.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

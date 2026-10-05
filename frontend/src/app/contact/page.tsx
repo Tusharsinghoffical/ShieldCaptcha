@@ -4,8 +4,11 @@ import { Metadata } from "next";
 import { Bug, ShieldCheck, BookOpen, Briefcase, Scale, Lightbulb } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Contact & Support — ShieldCaptcha Enterprise",
+  title: "Contact & Support",
   description: "Get in touch with the ShieldCaptcha team for bug reports, security disclosures, integrations, and enterprise inquiries.",
+  alternates: {
+    canonical: "/contact",
+  },
 };
 
 export default function ContactPage() {

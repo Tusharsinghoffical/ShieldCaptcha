@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#4338ca" />
+    </linearGradient>
+    <linearGradient id="checkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399" />
+      <stop offset="100%" stop-color="#10b981" />
+    </linearGradient>
+  </defs>
+  <path d="M50 8 L85 22 V50 C85 72 69 88 50 94 C31 88 15 72 15 50 V22 Z" fill="url(#shieldGrad)" />
+  <path d="M50 14 L80 26 V49 C80 68 66 82 50 87 C34 82 20 68 20 49 V26 Z" fill="#0f172a" opacity="0.4" />
+  <polyline points="34 50 45 61 66 38" fill="none" stroke="url(#checkGrad)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

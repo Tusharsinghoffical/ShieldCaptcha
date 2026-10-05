@@ -1,0 +1,25 @@
+# ShieldCaptcha
+
+> Zero-dependency, multi-modal autonomous bot defense and enterprise Proof-of-Work platform.
+
+ShieldCaptcha provides enterprise web applications with client-side Proof-of-Work (PoW) computation, interlocking jigsaw puzzles with computer-vision defense, and biomechanical kinematics trajectory analysis to distinguish human users from automated agents and scrapers.
+
+## Core Documentation & Pages
+
+- [Overview](https://shieldcaptcha.vercel.app/): Enterprise bot mitigation overview, architecture highlights, and real-time live defense widget.
+- [Interactive Demo](https://shieldcaptcha.vercel.app/demo): Interactive live demonstration of 1-Click Turnstile verification and magnetic jigsaw puzzles.
+- [Developer Documentation](https://shieldcaptcha.vercel.app/docs): Comprehensive quickstart integration guides, REST API reference, and server verification endpoints.
+- [Security Architecture](https://shieldcaptcha.vercel.app/architecture): Deep technical breakdown of 4-layer defense: SHA-256 Proof-of-Work, AES-CBC-128 encryption, kinematics physics, and telemetry audits.
+- [Integration Hub](https://shieldcaptcha.vercel.app/integration): Framework guides and copy-paste code snippets for React, Next.js, Node.js, Express, and Python FastAPI.
+- [Attack Simulator](https://shieldcaptcha.vercel.app/simulator): Interactive defense lab testing resistance against headless browsers, synthetic click events, and teleportation attacks.
+- [Security Policy & Vulnerability Disclosure](https://shieldcaptcha.vercel.app/security): Cryptographic threat model, security posture, and 90-day responsible vulnerability disclosure policy.
+- [Enterprise Trial](https://shieldcaptcha.vercel.app/trial): Instant onboarding and credential provisioning for development and staging environments.
+- [Contact & Support](https://shieldcaptcha.vercel.app/contact): Technical support channels and enterprise inquiries.
+- [Privacy Policy](https://shieldcaptcha.vercel.app/privacy): Zero-cookie, privacy-first data handling compliance and GDPR adherence.
+- [Terms of Service](https://shieldcaptcha.vercel.app/terms): Licensing and terms for self-hosted and cloud-managed ShieldCaptcha deployments.
+
+## Security & Architectural Guarantees
+
+- **No Third-Party Tracking**: ShieldCaptcha stores zero personal data, sets no persistent tracking cookies, and operates with zero external network dependencies.
+- **Stateless Verification**: Cryptographic HMAC-signed tokens enable instant serverless verification across distributed edge runtimes.
+- **Proof-of-Work Resistance**: SHA-256 difficulty scales dynamically to eliminate automated bot scraping while maintaining sub-second human execution.

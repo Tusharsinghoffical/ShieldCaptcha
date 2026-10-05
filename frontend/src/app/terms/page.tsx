@@ -4,8 +4,11 @@ import { Metadata } from "next";
 import { X } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — ShieldCaptcha Enterprise",
+  title: "Terms of Service",
   description: "Terms and conditions for using the ShieldCaptcha bot-defense SDK and API.",
+  alternates: {
+    canonical: "/terms",
+  },
 };
 
 export default function TermsPage() {

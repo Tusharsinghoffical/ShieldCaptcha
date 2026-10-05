@@ -4,8 +4,11 @@ import { Metadata } from "next";
 import { ShieldCheck, Check } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Cookie Policy — ShieldCaptcha Enterprise",
+  title: "Cookie Policy",
   description: "ShieldCaptcha uses zero tracking cookies. This page explains what cookies are used and why.",
+  alternates: {
+    canonical: "/cookies",
+  },
 };
 
 export default function CookiesPage() {

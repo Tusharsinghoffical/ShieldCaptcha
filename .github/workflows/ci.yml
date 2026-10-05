@@ -34,6 +34,10 @@ jobs:
         run: |
           npm --prefix frontend run build
 
+      - name: Run Technical SEO & Indexing Audit
+        run: |
+          npm --prefix frontend run seo:check
+
       - name: Validate Backend Engine Health & Syntax
         run: |
           node -c backend-node/server.js
