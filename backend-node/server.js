@@ -190,16 +190,31 @@ function createSignedToken(payload) {
   return `${body}.${sig}`;
 }
 
-function verifySignedToken(token) {
+function safeCompare(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  const aBuf = Buffer.from(a);
+  const bBuf = Buffer.from(b);
+  if (aBuf.length !== bBuf.length) {
+    const aHash = crypto.createHash('sha256').update(aBuf).digest();
+    const bHash = crypto.createHash('sha256').update(bBuf).digest();
+    crypto.timingSafeEqual(aHash, bHash);
+    return false;
+  }
+  return crypto.timingSafeEqual(aBuf, bBuf);
+}
+
+function verifySignedToken(token, key = CAPTCHA_SECRET) {
   if (!token || typeof token !== 'string') return null;
   const parts = token.split('.');
   if (parts.length !== 2) return null;
   const [body64, sig] = parts;
-  const expectedSig = hmacSign(body64);
-  const sBuf = Buffer.from(sig);
-  const expBuf = Buffer.from(expectedSig);
-  if (sBuf.length !== expBuf.length || !crypto.timingSafeEqual(sBuf, expBuf)) {
-    return null;
+  const expectedSig = hmacSign(body64, key);
+  if (!safeCompare(sig, expectedSig)) {
+    if (key !== CAPTCHA_SECRET && safeCompare(sig, hmacSign(body64, CAPTCHA_SECRET))) {
+      // Signature verified via root CAPTCHA_SECRET
+    } else {
+      return null;
+    }
   }
   try {
     return JSON.parse(Buffer.from(body64, 'base64url').toString('utf8'));
@@ -1517,7 +1532,7 @@ const server = http.createServer(async (req, res) => {
       });
     }
 
-    const payload = verifySignedToken(token);
+    const payload = verifySignedToken(token, keyRecord.secretKey);
     if (!payload) {
       return sendJson(res, 200, {
         success: false,
