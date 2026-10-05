@@ -98,8 +98,7 @@ export function Navbar() {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
               </span>
               <span className="font-semibold text-slate-700">Online</span>
-              <span className="text-slate-400">·</span>
-              <span className="text-[10px] text-slate-500 font-mono">Port 3000</span>
+              <span className="text-[10px] text-slate-500 font-mono">Defense Active</span>
             </div>
 
             {/* GitHub Repo Link */}
@@ -148,7 +147,7 @@ export function Navbar() {
           <div className="flex items-center justify-between px-3 py-2 bg-slate-50 rounded-lg text-xs font-medium text-slate-600 mb-2">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Engine Status: Active (Port 3000)</span>
+              <span>Engine Status: Operational (Active)</span>
             </div>
             <a
               href="https://github.com/Tusharsinghoffical/ShieldCaptcha"

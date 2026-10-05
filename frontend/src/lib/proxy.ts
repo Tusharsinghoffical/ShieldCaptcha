@@ -54,8 +54,13 @@ export async function proxyToBackend(req: NextRequest, endpoint: string) {
     const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
 
     if (endpoint === "/api/challenge") {
-      const searchParams = req.nextUrl.searchParams;
-      const mode = searchParams.get("mode") || "checkbox";
+      let mode = req.nextUrl.searchParams.get("mode") || "checkbox";
+      if (req.method === "POST") {
+        try {
+          const body = await req.json();
+          if (body?.mode) mode = body.mode;
+        } catch {}
+      }
       const challenge = serverlessEngine.createChallenge(mode);
       return NextResponse.json(challenge, { status: 200 });
     }
@@ -65,7 +70,7 @@ export async function proxyToBackend(req: NextRequest, endpoint: string) {
       try {
         body = await req.json();
       } catch {}
-      const result = serverlessEngine.verifySubmission(body.id, body.encrypted, clientIp);
+      const result = serverlessEngine.verifySubmission(body.id, body.encrypted, clientIp, body);
       return NextResponse.json(result, { status: 200 });
     }
 
