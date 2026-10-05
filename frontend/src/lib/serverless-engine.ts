@@ -877,6 +877,32 @@ export const serverlessEngine = {
     };
   },
 
+  inspectToken(token: string) {
+    if (!token) return { valid: false, error: "missing_token" };
+    const payload = verifySignedToken(token);
+    if (!payload) return { valid: false, reason: "invalid_or_tampered_signature" };
+    const now = Date.now();
+    const isExpired = payload.exp < now;
+    const isConsumed = usedTokens.has(payload.jti || payload.cid);
+    return {
+      valid: !isExpired && !isConsumed,
+      signatureValid: true,
+      expired: isExpired,
+      consumed: isConsumed,
+      payload: {
+        tokenId: payload.jti,
+        challengeId: payload.cid,
+        siteKey: payload.aud,
+        mode: payload.mode,
+        score: payload.score,
+        issuedAt: new Date(payload.iat).toISOString(),
+        expiresAt: new Date(payload.exp).toISOString(),
+        ttlRemainingSec: Math.max(0, Math.floor((payload.exp - now) / 1000)),
+        subIpHash: payload.sub
+      }
+    };
+  },
+
   getHealthReport(isDeep: boolean = false) {
     const uptimeSec = Math.floor((Date.now() - metrics.startedAt) / 1000);
     const base = {

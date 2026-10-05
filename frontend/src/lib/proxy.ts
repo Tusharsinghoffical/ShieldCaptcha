@@ -98,7 +98,7 @@ export async function proxyToBackend(req: NextRequest, endpoint: string) {
       return NextResponse.json({ success: ok, siteKey: target }, { status: ok ? 200 : 404, headers: CORS_HEADERS });
     }
 
-    if (endpoint === "/api/challenge") {
+    if (endpoint === "/api/challenge" || endpoint === "/api/v1/challenge") {
       if (req.nextUrl.searchParams.get("simulate_lockout") === "true") {
         const lock = serverlessEngine.simulateIpLockout(clientIp, 300);
         return NextResponse.json({
@@ -125,7 +125,7 @@ export async function proxyToBackend(req: NextRequest, endpoint: string) {
       return NextResponse.json(challenge, { status: statusCode, headers: CORS_HEADERS });
     }
 
-    if (endpoint === "/api/verify" && req.method === "POST") {
+    if ((endpoint === "/api/verify" || endpoint === "/api/v1/verify") && req.method === "POST") {
       let body: any = {};
       try {
         body = await req.json();
@@ -133,6 +133,16 @@ export async function proxyToBackend(req: NextRequest, endpoint: string) {
       const result: any = serverlessEngine.verifySubmission(body.id, body.encrypted, clientIp, body);
       const statusCode = result?.error === "ip_temporarily_locked" ? 429 : 200;
       return NextResponse.json(result, { status: statusCode, headers: CORS_HEADERS });
+    }
+
+    if ((endpoint === "/api/token/inspect" || endpoint === "/api/v1/token/inspect") && req.method === "POST") {
+      let body: any = {};
+      try {
+        body = await req.json();
+      } catch {}
+      const token = body.token || body.response;
+      const result = serverlessEngine.inspectToken(token);
+      return NextResponse.json(result, { status: 200, headers: CORS_HEADERS });
     }
 
     if ((endpoint === "/api/siteverify" || endpoint === "/api/v1/siteverify") && req.method === "POST") {

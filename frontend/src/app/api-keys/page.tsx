@@ -197,13 +197,17 @@ export default function ApiKeysPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ siteKey: targetSiteKey, mode: "checkbox" })
       });
+      if (!chalRes.ok) {
+        const text = await chalRes.text();
+        throw new Error(`Challenge request failed (HTTP ${chalRes.status}): ${text.slice(0, 100)}`);
+      }
       const chal = await chalRes.json();
-      if (!chal.id) throw new Error("Could not fetch challenge");
+      if (!chal.id) throw new Error(chal.error || "Could not fetch challenge");
 
       // 2. Solve PoW in browser
       let nonce = 0;
       while (true) {
-        const str = `${chal.prefix}:${nonce}`;
+        const str = `${chal.prefix || chal.powPrefix}:${nonce}`;
         const encoder = new TextEncoder();
         const data = encoder.encode(str);
         const hashBuf = await crypto.subtle.digest("SHA-256", data);
@@ -216,7 +220,7 @@ export default function ApiKeysPage() {
             break;
           }
         }
-        if (zeros >= (chal.bits || 16)) break;
+        if (zeros >= (chal.bits || chal.powBits || 14)) break;
         nonce++;
         if (nonce > 500000) break;
       }
@@ -230,6 +234,7 @@ export default function ApiKeysPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: chal.id,
+          token: chal.token,
           nonce: nonce,
           powDuration: 120,
           trustedEvent: true,
@@ -238,6 +243,10 @@ export default function ApiKeysPage() {
           interaction: { syntheticEventRatio: 0 }
         })
       });
+      if (!verRes.ok) {
+        const text = await verRes.text();
+        throw new Error(`Verify request failed (HTTP ${verRes.status}): ${text.slice(0, 100)}`);
+      }
       const ver = await verRes.json();
 
       if (ver.token) {
