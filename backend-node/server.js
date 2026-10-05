@@ -36,7 +36,7 @@ const MIN_DRAG_TIME_MS = 30;     // Minimum drag gesture time
 const BASE_POW_BITS = 16;        // ~65k hashes baseline (~50ms) — much harder for bots
 const MAX_POW_BITS = 22;         // Adaptive ceiling (~4M hashes) for sustained attackers
 const MIN_TRUST_SCORE = 20;      // Realistic trust threshold (bots get 0, humans get 80-100)
-const TARGET_TOLERANCE = 18;     // +/- 18px comfortable human tolerance
+const TARGET_TOLERANCE = 24;     // +/- 24px balanced, moderate ergonomic human tolerance
 const IP_LOCK_THRESHOLD = 8;     // Consecutive fails before IP lock
 const IP_LOCK_DURATION = 600000; // 10 minutes lock duration
 
@@ -728,8 +728,8 @@ function auditClientEnvironment(env, req) {
     penalty += 90; flags.push('headless_browser');
   }
 
-  // --- Native API tamper detection ---
-  if (e.tamperedNatives === true) { penalty += 65; flags.push('tampered_native_apis'); }
+  // --- Native API tamper detection (minor note for browser extensions) ---
+  if (e.tamperedNatives === true) { penalty += 5; flags.push('tampered_native_apis'); }
 
   // --- WebGL virtualization (SwiftShader, llvmpipe) ---
   if (e.webglRenderer) {
@@ -1095,6 +1095,7 @@ const server = http.createServer(async (req, res) => {
       bg: puzzle.bgDataUrl,
       piece: puzzle.pieceDataUrl,
       pieceY: puzzle.targetY,
+      targetX: puzzle.targetX,
       token: createSignedToken({ cid, powPrefix, powBits, exp: Date.now() + CHALLENGE_TTL, ip: ipHash(clientIp), aud: activeSiteKey })
     });
   }
@@ -1218,7 +1219,8 @@ const server = http.createServer(async (req, res) => {
             prefix: challenges.get(stepUpCid).powPrefix,
             bg: puzzle.bgDataUrl,
             piece: puzzle.pieceDataUrl,
-            pieceY: puzzle.targetY
+            pieceY: puzzle.targetY,
+            targetX: puzzle.targetX
           }
         });
       }

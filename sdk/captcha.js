@@ -640,8 +640,8 @@
 
       if (currentChallenge && typeof currentChallenge.targetX === 'number') {
         const dist = Math.abs(currentPx - currentChallenge.targetX);
-        if (dist <= 10) {
-          pieceImg.style.filter = 'drop-shadow(0 0 12px #10b981) drop-shadow(0 0 4px #34d399)';
+        if (dist <= 18) {
+          pieceImg.style.filter = 'drop-shadow(0 0 14px #10b981) drop-shadow(0 0 6px #34d399)';
           knob.style.boxShadow = '0 0 16px rgba(16, 185, 129, 0.7)';
         } else {
           pieceImg.style.filter = 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5))';

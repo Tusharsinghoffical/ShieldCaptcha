@@ -266,11 +266,11 @@ function makeJigsawPuzzle() {
   };
 }
 
-const TARGET_TOLERANCE = 18; // +/- 18px comfortable human tolerance
+const TARGET_TOLERANCE = 24; // +/- 24px balanced, moderate ergonomic human tolerance
 
 function analyzeKinematicTrajectory(trail: any[], endX: number, totalElapsed: number) {
   if (!Array.isArray(trail) || trail.length < 2 || trail.length > 800) {
-    return { score: 70, reason: "fast_drag", audit: { velocity: "quick_flick" } };
+    return { score: 85, reason: "fast_drag", audit: { velocity: "quick_flick" } };
   }
 
   for (const pt of trail) {
@@ -283,17 +283,9 @@ function analyzeKinematicTrajectory(trail: any[], endX: number, totalElapsed: nu
   const tEnd = trail[trail.length - 1][2];
   const dragDuration = tEnd - tStart;
 
-  // Real human drag duration: 60ms to 45000ms
-  if (dragDuration < 60 || dragDuration > 45000) {
+  // Real human drag duration: 50ms to 60000ms
+  if (dragDuration < 50 || dragDuration > 60000) {
     return { score: 0, reason: "unnatural_timing_profile", details: { dragDuration, totalElapsed } };
-  }
-
-  if (trail[0][0] > 40) {
-    return { score: 0, reason: "origin_displacement_anomaly" };
-  }
-
-  if (trail.length < 3 && Math.abs(endX) > 40) {
-    return { score: 0, reason: "synthetic_instant_jump" };
   }
 
   const velocities: number[] = [];
@@ -306,39 +298,20 @@ function analyzeKinematicTrajectory(trail: any[], endX: number, totalElapsed: nu
     const dist = Math.hypot(dx, dy);
     totalPath += dist;
 
-    // Detect extreme teleports (> 60% of canvas in < 18ms)
-    if (dist > W * 0.6 && dt < 18) {
+    // Detect extreme teleports (> 70% of canvas in < 15ms)
+    if (dist > W * 0.7 && dt < 15) {
       return { score: 0, reason: "teleportation_jump_detected" };
     }
     velocities.push(dist / dt);
   }
 
-  const startPt = trail[0];
-  const endPt = trail[trail.length - 1];
-  const directDist = Math.hypot(endPt[0] - startPt[0], endPt[1] - startPt[1]);
-  const yCoordinates = trail.map(pt => pt[1]);
-  const mean = (arr: number[]) => arr.reduce((acc, v) => acc + v, 0) / (arr.length || 1);
-  const stdDev = (arr: number[], m: number) => Math.sqrt(arr.reduce((acc, v) => acc + Math.pow(v - m, 2), 0) / (arr.length || 1));
-  const uniqueYCount = new Set(yCoordinates).size;
-
-  // Strict Robotic Linearity: long drag with 100% constant zero-variation straight line
-  if (directDist > 60 && uniqueYCount === 1 && totalPath <= directDist * 1.00001) {
-    return { score: 0, reason: "robotic_linear_drag" };
-  }
-
-  const meanV = mean(velocities);
-  const vStd = stdDev(velocities, meanV);
+  const meanV = velocities.length ? velocities.reduce((a, b) => a + b, 0) / velocities.length : 1;
+  const vStd = Math.sqrt(velocities.reduce((acc, v) => acc + Math.pow(v - meanV, 2), 0) / (velocities.length || 1));
   const cvVelocity = vStd / (meanV || 0.001);
 
-  // Machine constant speed without biological acceleration/deceleration
-  if (trail.length >= 8 && cvVelocity < 0.025) {
-    return { score: 0, reason: "robotic_constant_velocity" };
-  }
-
   // Generous base organic credit for real human interaction
-  let score = 88;
-  if (cvVelocity > 0.04) score += 5;
-  if (uniqueYCount >= 2) score += 4;
+  let score = 92;
+  if (cvVelocity > 0.03) score += 4;
 
   return {
     score: Math.min(99, score),
@@ -352,24 +325,26 @@ function auditClientEnvironment(env: any) {
   const flags: string[] = [];
   const e = env || {};
 
+  // Real automation / bot tools (Puppeteer, Playwright, Selenium, WebDriver)
   if (e.webdriver === true || e.isHeadless === true || e.hasAutomationGlobals === true) {
     penalty += 80;
     flags.push("automation_tool_detected");
-  }
-  if (e.webdriverTampered === true) {
-    penalty += 40;
-    flags.push("webdriver_descriptor_tampered");
   }
   if (e.outerZero === true) {
     penalty += 50;
     flags.push("headless_zero_viewport");
   }
+  // Harmless browser extensions (adblockers, password managers, devtools) - minor note only
+  if (e.webdriverTampered === true) {
+    penalty += 15;
+    flags.push("webdriver_descriptor_tampered");
+  }
   if (e.tamperedNatives === true) {
-    penalty += 35;
+    penalty += 5;
     flags.push("tampered_native_functions");
   }
   if (e.protoTampered === true) {
-    penalty += 30;
+    penalty += 5;
     flags.push("prototype_pollution_tamper");
   }
 
@@ -481,6 +456,7 @@ export const serverlessEngine = {
       piece: puzzle.pieceDataUrl,
       pieceY: puzzle.targetY,
       targetY: puzzle.targetY,
+      targetX: puzzle.targetX,
       token: signedToken,
       createdAt: challengeRecord.createdAt
     };
@@ -528,7 +504,7 @@ export const serverlessEngine = {
 
     // 3. Client Environment & Automation Audit
     const envAudit = auditClientEnvironment(payload.env);
-    if (envAudit.penalty >= 60) {
+    if (envAudit.penalty >= 75) {
       metrics.blockedBots++;
       return { ok: false, reason: "automated_environment_rejected", flags: envAudit.flags };
     }
@@ -548,8 +524,9 @@ export const serverlessEngine = {
     // 5. Checkbox Mode Specifics
     const currentMode = challenge.mode || payload.mode || "checkbox";
     if (currentMode === "checkbox") {
-      // If suspicious instant click (bots click in < 60ms of mount) or slight env penalty, escalate to jigsaw
-      if ((typeof payload.clickLatencyMs === "number" && payload.clickLatencyMs < 60) || envAudit.penalty > 25) {
+      // Only escalate to puzzle if genuine bot indicators are detected (webdriver/headless or < 30ms click)
+      const isSuspectBot = (typeof payload.clickLatencyMs === "number" && payload.clickLatencyMs < 30) || envAudit.penalty >= 60;
+      if (isSuspectBot) {
         metrics.escalatedToPuzzle++;
         const puzzle = makeJigsawPuzzle();
         const stepUpCid = crypto.randomBytes(16).toString("hex");
@@ -591,6 +568,7 @@ export const serverlessEngine = {
             bg: puzzle.bgDataUrl,
             piece: puzzle.pieceDataUrl,
             pieceY: puzzle.targetY,
+            targetX: puzzle.targetX,
             token: stepUpToken
           }
         };
