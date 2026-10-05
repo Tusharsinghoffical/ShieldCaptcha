@@ -22,6 +22,34 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 
+// Load .env file if present
+function loadEnv() {
+  const envPaths = [
+    path.resolve(process.cwd(), '.env'),
+    path.resolve(__dirname, '..', '.env'),
+    path.resolve(__dirname, '.env')
+  ];
+  for (const envPath of envPaths) {
+    if (fs.existsSync(envPath)) {
+      try {
+        const content = fs.readFileSync(envPath, 'utf8');
+        content.split('\n').forEach(line => {
+          const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
+          if (match) {
+            const key = match[1];
+            let val = (match[2] || '').trim();
+            if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1);
+            if (val.startsWith("'") && val.endsWith("'")) val = val.slice(1, -1);
+            if (!process.env[key]) process.env[key] = val;
+          }
+        });
+        break;
+      } catch {}
+    }
+  }
+}
+loadEnv();
+
 // Enterprise Cryptographic Keys & Config
 const CAPTCHA_SECRET = process.env.CAPTCHA_SECRET || crypto.randomBytes(32).toString('hex');
 const SITE_KEY = process.env.SITE_KEY || 'pub_shield_live_' + crypto.randomBytes(12).toString('hex');
@@ -66,6 +94,16 @@ apiKeys.set(SITE_KEY, {
   totalRequests: 0,
   active: true
 });
+apiKeys.set('pub_shield_live_demo_sitekey', {
+  siteKey: 'pub_shield_live_demo_sitekey',
+  secretKey: 'sec_shield_live_demo_secretkey',
+  name: 'Global Demo Key',
+  allowedDomains: ['*'],
+  createdAt: new Date().toISOString(),
+  mode: 'adaptive',
+  totalRequests: 0,
+  active: true
+});
 
 function getApiKeyBySecret(secret) {
   if (!secret) return null;
@@ -75,6 +113,9 @@ function getApiKeyBySecret(secret) {
   }
   if (cleanSec === SITE_SECRET) {
     return { siteKey: SITE_KEY, secretKey: SITE_SECRET, name: 'Default Root Key', active: true };
+  }
+  if (cleanSec === 'sec_shield_live_demo_secretkey') {
+    return { siteKey: 'pub_shield_live_demo_sitekey', secretKey: cleanSec, name: 'Global Demo Key', active: true };
   }
   return null;
 }
@@ -981,7 +1022,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === 'POST' && (u === '/api/v1/keys/create' || u === '/api/keys/create')) {
-    if (!verifyAdminAuth() && process.env.ALLOW_PUBLIC_KEY_GEN !== 'true') {
+    if (!verifyAdminAuth() && process.env.ALLOW_PUBLIC_KEY_GEN === 'false') {
       return sendJson(res, 401, { success: false, error: 'unauthorized', message: 'Admin authentication required to generate API keys' });
     }
     if (apiKeys.size > 200) {

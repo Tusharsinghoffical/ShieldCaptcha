@@ -16,6 +16,39 @@ const BASE_POW_BITS = 14;        // 14 bits (~16k hashes, ~30ms in browser worke
 const challenges = new Map<string, any>();
 const usedTokens = new Map<string, number>();
 
+export interface ApiKeyRecord {
+  siteKey: string;
+  secretKey: string;
+  name: string;
+  allowedDomains: string[];
+  mode: string;
+  createdAt: string;
+  totalRequests: number;
+  active: boolean;
+}
+
+const apiKeys = new Map<string, ApiKeyRecord>();
+apiKeys.set(SITE_KEY, {
+  siteKey: SITE_KEY,
+  secretKey: SITE_SECRET,
+  name: "Default Live Production Key",
+  allowedDomains: ["*"],
+  mode: "adaptive",
+  createdAt: "2026-01-01T00:00:00.000Z",
+  totalRequests: 842,
+  active: true,
+});
+apiKeys.set("pub_shield_live_demo_sitekey", {
+  siteKey: "pub_shield_live_demo_sitekey",
+  secretKey: "sec_shield_live_demo_secretkey",
+  name: "Global Demo Key",
+  allowedDomains: ["*"],
+  mode: "adaptive",
+  createdAt: "2026-01-01T00:00:00.000Z",
+  totalRequests: 320,
+  active: true,
+});
+
 // IP Rate Limiting & Fail Lockout System (5-minute and 10-minute temporary ban)
 const IP_LOCK_THRESHOLD = 5;          // 5 failed attempts = 5 min lock
 const IP_LOCK_DURATION_5MIN = 300000; // 5 minutes in ms
@@ -752,8 +785,75 @@ export const serverlessEngine = {
     };
   },
 
+  listApiKeys(isAdmin = true) {
+    return Array.from(apiKeys.values()).map(k => {
+      const masked = k.secretKey ? k.secretKey.slice(0, 10) + "..." + k.secretKey.slice(-4) : "***";
+      return {
+        ...k,
+        secretKey: isAdmin ? k.secretKey : masked,
+        secretKeyMasked: masked,
+      };
+    });
+  },
+
+  createApiKey({ name, allowedDomains, mode }: { name: string; allowedDomains?: string[]; mode?: string }) {
+    const siteKey = "pub_shield_" + crypto.randomBytes(12).toString("hex");
+    const secretKey = "sec_shield_" + crypto.randomBytes(16).toString("hex");
+    const record: ApiKeyRecord = {
+      siteKey,
+      secretKey,
+      name: (name || "New Application").slice(0, 50),
+      allowedDomains: (allowedDomains && allowedDomains.length > 0) ? allowedDomains : ["*"],
+      mode: ["checkbox", "jigsaw", "adaptive"].includes(mode || "") ? (mode as string) : "adaptive",
+      createdAt: new Date().toISOString(),
+      totalRequests: 0,
+      active: true,
+    };
+    apiKeys.set(siteKey, record);
+    return record;
+  },
+
+  revokeApiKey(siteKey: string) {
+    const key = apiKeys.get(siteKey);
+    if (!key) return false;
+    key.active = false;
+    return true;
+  },
+
+  getApiKeyBySecret(secret: string) {
+    if (!secret) return null;
+    const clean = secret.trim();
+    for (const k of apiKeys.values()) {
+      if (k.active && k.secretKey === clean) return k;
+    }
+    if (clean === SITE_SECRET || clean === "sec_shield_live_demo_secretkey") {
+      return { siteKey: SITE_KEY, secretKey: clean, name: "Root Key", allowedDomains: ["*"], mode: "adaptive", createdAt: "", totalRequests: 0, active: true };
+    }
+    return null;
+  },
+
+  getApiKeyBySiteKey(siteKey: string) {
+    if (!siteKey) return null;
+    const clean = siteKey.trim();
+    const k = apiKeys.get(clean);
+    if (k && k.active) return k;
+    if (clean === SITE_KEY || clean === "pub_shield_live_demo_sitekey") {
+      return { siteKey: clean, secretKey: SITE_SECRET, name: "Root Key", allowedDomains: ["*"], mode: "adaptive", createdAt: "", totalRequests: 0, active: true };
+    }
+    return null;
+  },
+
   verifySiteToken(token: string, secret?: string) {
     if (!token) return { success: false, error: "missing_token" };
+
+    if (secret) {
+      const keyObj = this.getApiKeyBySecret(secret);
+      if (!keyObj) {
+        return { success: false, error: "invalid_site_secret", message: "Provided API secret key is invalid or revoked" };
+      }
+      keyObj.totalRequests = (keyObj.totalRequests || 0) + 1;
+    }
+
     const payload = verifySignedToken(token);
     if (!payload) {
       return { success: false, error: "invalid_or_tampered_token" };

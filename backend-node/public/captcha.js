@@ -406,9 +406,17 @@
         @keyframes sc-guide-slide-left { 0%,100% { transform: translateX(0); } 50% { transform: translateX(-5px); } }
         @keyframes sc-guide-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
         @keyframes sc-warn-blink { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+        @keyframes sc-guide-slidein { 0% { opacity:0; transform:translateY(-6px); } 100% { opacity:1; transform:translateY(0); } }
+        @keyframes sc-hint-glow { 0%,100% { box-shadow:0 0 0 0 rgba(99,102,241,0); } 50% { box-shadow:0 0 10px 2px rgba(99,102,241,0.25); } }
+        @keyframes sc-match-glow { 0%,100% { box-shadow:0 0 0 0 rgba(16,185,129,0); } 50% { box-shadow:0 0 14px 3px rgba(16,185,129,0.4); } }
+        @keyframes sc-warn-shake { 0%,100%{transform:rotate(0deg)} 25%{transform:rotate(-6deg)} 75%{transform:rotate(6deg)} }
         .sc-chk-btn:hover { border-color: #818cf8 !important; box-shadow: 0 4px 16px rgba(99,102,241,0.25) !important; }
         .sc-knob:active { cursor: grabbing !important; transform: scale(1.05); }
         .sc-shake { animation: sc-shake 0.4s ease; }
+        .sc-top-guide { animation: sc-guide-slidein 0.3s ease; }
+        .sc-top-guide.sc-hint-idle { animation: sc-hint-glow 2s ease-in-out infinite; }
+        .sc-top-guide.sc-hint-match { animation: sc-match-glow 0.6s ease-in-out infinite; }
+        .sc-guide-icon.sc-warn-icon { animation: sc-warn-shake 0.4s ease-in-out infinite !important; }
       `;
       document.head.appendChild(st);
     }
@@ -834,16 +842,19 @@
           pieceImg.style.filter = 'drop-shadow(0 0 14px #10b981) drop-shadow(0 0 6px #34d399)';
           knob.style.boxShadow = '0 0 16px rgba(16, 185, 129, 0.7)';
           if (isDragging) {
-            setTopGuide('match', '✨ Perfect match! Yahi chhod dein (Release now)');
+            topGuide && topGuide.classList.add('sc-hint-match');
+            topGuide && topGuide.classList.remove('sc-hint-idle');
+            setTopGuide('match', '✨ Perfect! Release here — Yahan chhod dein');
           }
         } else {
           pieceImg.style.filter = 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5))';
           knob.style.boxShadow = '0 4px 12px rgba(79, 70, 229, 0.5)';
           if (isDragging) {
+            topGuide && topGuide.classList.remove('sc-hint-match');
             if (diff < -22) {
-              setTopGuide('right', '👉 Aage slide karein slot ki taraf (Slide right)');
+              setTopGuide('right', '👉 Slide right — Aage ki taraf khenchein');
             } else {
-              setTopGuide('left', '👈 Aage nikal gaye! Thoda piche karein (Move left)');
+              setTopGuide('left', '👈 Too far! Move left — Thoda wapas karein');
             }
           }
         }
@@ -940,9 +951,18 @@
         isReady = true;
         overlay.style.opacity = '0';
         overlay.style.pointerEvents = 'none';
-        setStatus('Slide the puzzle piece to fit');
+        setStatus('Drag the slider → fit the piece into the shadow slot');
         updateAttemptBadge();
-        setTopGuide('normal', 'Slider ko slide karke piece ko slot me fit karein');
+        topGuide && topGuide.classList.add('sc-hint-idle');
+        topGuide && topGuide.classList.remove('sc-hint-match');
+        setTopGuide('normal', '💡 Tip: Drag the knob → align the piece into the cut-out slot');
+        // After 3s idle, show a more explicit step hint
+        clearTimeout(root._idleHintTimer);
+        root._idleHintTimer = setTimeout(() => {
+          if (isReady && !isSolved && !isDragging) {
+            setTopGuide('right', '👉 Hold & drag the purple knob rightward until the piece snaps in');
+          }
+        }, 3000);
       } catch {
         overlay.style.opacity = '1';
         loadText.textContent = 'Network error.';
@@ -1124,7 +1144,9 @@
       knobStartX = knobX;
       knob.setPointerCapture(e.pointerId);
       promptText.style.opacity = '0.3';
-      setTopGuide('right', '👉 Slider ko aage slide karein slot tak');
+      clearTimeout(root._idleHintTimer);
+      topGuide && topGuide.classList.remove('sc-hint-idle', 'sc-hint-match');
+      setTopGuide('right', '👉 Slide right — align the piece into the shadow gap');
       recordPoint(e);
     });
 
@@ -1150,14 +1172,15 @@
         attemptCount++;
         updateAttemptBadge();
         shakeWidget();
+        guideIcon && guideIcon.classList.add('sc-warn-icon');
         if (attemptCount >= MAX_ATTEMPTS) {
-          setTopGuide('warning', '⚠️ Max 3 attempts used! Naya puzzle generate ho raha hai...');
+          setTopGuide('warning', '⚠️ All 3 attempts used — Naya puzzle aa raha hai...');
           setStatus('Max attempts reached. Refreshing...', '#ef4444');
-          setTimeout(() => { attemptCount = 0; initChallenge('jigsaw'); }, 1400);
+          setTimeout(() => { attemptCount = 0; guideIcon && guideIcon.classList.remove('sc-warn-icon'); initChallenge('jigsaw'); }, 1400);
         } else {
-          setTopGuide('warning', `⚠️ Drag bahut tez tha! Aise nahi, aaram se slide karein (${attemptCount}/${MAX_ATTEMPTS})`);
-          setStatus('Drag too fast: human movement required', '#ef4444');
-          setTimeout(() => initChallenge('jigsaw'), 1200);
+          setTopGuide('warning', `⚠️ Too fast! Drag slowly — Aaram se slide karein (${attemptCount}/${MAX_ATTEMPTS})`);
+          setStatus('Drag too fast — move naturally like a human', '#ef4444');
+          setTimeout(() => { guideIcon && guideIcon.classList.remove('sc-warn-icon'); initChallenge('jigsaw'); }, 1200);
         }
         return;
       }
@@ -1234,23 +1257,26 @@
           badgeText.textContent = 'Anomaly Detected';
           shakeWidget();
 
+          guideIcon && guideIcon.classList.add('sc-warn-icon');
           if (attemptCount >= MAX_ATTEMPTS) {
-            setTopGuide('warning', '⚠️ 3 galat attempts! Naya puzzle generate ho raha hai...');
-            setStatus('3 failed attempts. Loading fresh challenge...', '#ef4444');
+            setTopGuide('warning', '⚠️ 3 failed attempts — Refreshing puzzle...');
+            setStatus('All 3 attempts failed. Loading fresh challenge...', '#ef4444');
             setTimeout(() => {
               attemptCount = 0;
+              guideIcon && guideIcon.classList.remove('sc-warn-icon');
               initChallenge('jigsaw');
             }, 1400);
           } else {
+            const remaining = MAX_ATTEMPTS - attemptCount;
             const warningMsg = result.reason === 'puzzle_misaligned'
-              ? `⚠️ Slot match nahi hua! Outline ke andar fit karein (${attemptCount}/${MAX_ATTEMPTS})`
-              : `⚠️ Verification fail hui (${attemptCount}/${MAX_ATTEMPTS})`;
+              ? `⚠️ Piece didn't fit! Align inside the shadow outline — ${remaining} attempt${remaining !== 1 ? 's' : ''} left`
+              : `⚠️ Verification failed — ${remaining} attempt${remaining !== 1 ? 's' : ''} remaining`;
             setTopGuide('warning', warningMsg);
             const reasonMsg = result.reason === 'puzzle_misaligned'
-              ? 'Slightly off target — fit the piece into slot'
-              : (result.reason ? result.reason.replace(/_/g, ' ') : 'Verification Failed');
+              ? `Off by ${Math.abs(Math.round(getPieceX() - (currentChallenge.targetX || 0)))}px — slide piece exactly into the cut-out`
+              : (result.reason ? result.reason.replace(/_/g, ' ') : 'Verification failed');
             setStatus(reasonMsg, '#ef4444');
-            setTimeout(() => initChallenge('jigsaw'), 1200);
+            setTimeout(() => { guideIcon && guideIcon.classList.remove('sc-warn-icon'); initChallenge('jigsaw'); }, 1400);
           }
         }
       } catch {

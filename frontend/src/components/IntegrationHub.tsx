@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { Check, Copy, Code, Terminal, Server } from "lucide-react";
+import { Check, Copy, Code, Terminal, Server, Download, Sparkles } from "lucide-react";
 
 export function IntegrationHub() {
   const [frontendTab, setFrontendTab] = useState<"html" | "react">("html");
-  const [backendTab, setBackendTab] = useState<"node" | "python" | "php" | "go">("node");
+  const [backendTab, setBackendTab] = useState<"package" | "node" | "python" | "php" | "go">("package");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const copyToClipboard = (text: string, key: string) => {
@@ -16,7 +16,7 @@ export function IntegrationHub() {
 
   const snippets = {
     html: `<!-- 1. Include ShieldCaptcha Standalone SDK -->
-<script src="http://localhost:3000/captcha.js"></script>
+<script src="/captcha.js"></script>
 
 <!-- 2. Target Container in your form -->
 <form id="login-form">
@@ -61,7 +61,7 @@ export function ShieldCaptchaEmbed({ onToken }: { onToken: (token: string) => vo
 
   useEffect(() => {
     const script = document.createElement('script');
-    script.src = 'http://localhost:3000/captcha.js';
+    script.src = '/captcha.js';
     script.async = true;
     script.onload = () => {
       if (boxRef.current && (window as any).ShieldCaptcha) {
@@ -78,7 +78,49 @@ export function ShieldCaptchaEmbed({ onToken }: { onToken: (token: string) => vo
   return <div ref={boxRef} style={{ minHeight: '80px', display: 'flex', justifyContent: 'center' }} />;
 }`,
 
-    node: `// Node.js (Express) Server-Side Verification
+    package: `// 1. Install official ShieldCaptcha package:
+// npm install shieldcaptcha
+
+const express = require('express');
+const { ShieldCaptcha } = require('shieldcaptcha');
+
+const app = express();
+app.use(express.json());
+
+// Initialize with your keys from the dashboard
+const captcha = new ShieldCaptcha({
+  siteKey: process.env.SHIELDCAPTCHA_SITE_KEY,
+  secretKey: process.env.SHIELDCAPTCHA_SECRET_KEY,
+  apiUrl: 'https://shield-captcha.vercel.app' // or http://localhost:3000
+});
+
+// Protect any authentication or form endpoint
+app.post('/api/login', async (req, res) => {
+  const { email, password, captcha_token } = req.body;
+  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+
+  // Single-line server verification
+  const verification = await captcha.verify({
+    token: captcha_token,
+    remoteIp: clientIp
+  });
+
+  if (!verification.success) {
+    return res.status(403).json({
+      error: 'Captcha verification failed',
+      reason: verification.error
+    });
+  }
+
+  // Token valid and consumed! Proceed with login
+  console.log('Verified Human Trust Score:', verification.score);
+  res.json({ success: true, message: 'Welcome back!' });
+});
+
+// Or use the built-in Express middleware:
+// app.post('/api/protected', captcha.middleware({ minScore: 50 }), handler);`,
+
+    node: `// Node.js (Express) Raw HTTP Verification
 const express = require('express');
 const app = express();
 app.use(express.json());
@@ -89,7 +131,7 @@ app.post('/api/login', async (req, res) => {
   const { email, token } = req.body;
 
   // 1. Verify single-use token with ShieldCaptcha engine
-  const verifyRes = await fetch('http://localhost:3000/api/siteverify', {
+  const verifyRes = await fetch('/api/siteverify', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -123,7 +165,7 @@ async def login(request: Request):
 
     async with httpx.AsyncClient() as client:
         resp = await client.post(
-            "http://localhost:3000/api/siteverify",
+            "https://shield-captcha.vercel.app/api/siteverify",
             headers={"X-Site-Secret": SITE_SECRET},
             json={"token": token, "ip": client_ip}
         )
@@ -139,139 +181,173 @@ async def login(request: Request):
 $token = $_POST['token'];
 $siteSecret = 'sec_shield_live_secret';
 
-$payload = json_encode(['token' => $token, 'ip' => $_SERVER['REMOTE_ADDR']]);
-$ch = curl_init('http://localhost:3000/api/siteverify');
+$payload = json_encode([
+    'token' => $token,
+    'ip' => $_SERVER['REMOTE_ADDR']
+]);
+
+$ch = curl_init('https://shield-captcha.vercel.app/api/siteverify');
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
     'Content-Type: application/json',
     'X-Site-Secret: ' . $siteSecret
 ]);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-$res = json_decode(curl_exec($ch), true);
+
+$response = curl_exec($ch);
 curl_close($ch);
 
-if (!$res || !$res['success']) {
+$result = json_decode($response, true);
+if (!$result['success']) {
     http_response_code(403);
-    echo json_encode(['error' => 'Bot detected']);
+    echo json_encode(['error' => 'Bot challenge failed']);
     exit;
 }
+echo json_encode(['authenticated' => true]);`,
 
-echo json_encode(['authorized' => true, 'score' => $res['trustScore']]);
-?>`,
-
-    go: `// Go (Golang) Token Verification
-package main
+    go: `package main
 
 import (
 	"bytes"
 	"encoding/json"
 	"net/http"
-	"time"
 )
 
-func VerifyCaptcha(token, clientIP, secret string) (bool, int) {
-	payload, _ := json.Marshal(map[string]string{"token": token, "ip": clientIP})
-	req, _ := http.NewRequest("POST", "http://localhost:3000/api/siteverify", bytes.NewBuffer(payload))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-Site-Secret", secret)
+type VerifyPayload struct {
+	Token string \`json:"token"\`
+	IP    string \`json:"ip"\`
+}
 
-	client := &http.Client{Timeout: 5 * time.Second}
+func verifyCaptcha(token, ip string) bool {
+	data, _ := json.Marshal(VerifyPayload{Token: token, IP: ip})
+	req, _ := http.NewRequest("POST", "https://shield-captcha.vercel.app/api/siteverify", bytes.NewBuffer(data))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Site-Secret", "sec_shield_live_secret")
+
+	client := &http.Client{}
 	resp, err := client.Do(req)
-	if err != nil || resp.StatusCode != 200 { return false, 0 }
+	if err != nil || resp.StatusCode != 200 {
+		return false
+	}
 	defer resp.Body.Close()
 
-	var res struct { Success bool \`json:"success"\`; TrustScore int \`json:"trustScore"\` }
+	var res map[string]interface{}
 	json.NewDecoder(resp.Body).Decode(&res)
-	return res.Success && res.TrustScore >= 30, res.TrustScore
+	return res["success"] == true
 }`
   };
 
   return (
-    <div id="integration" className="grid grid-cols-1 lg:grid-cols-2 gap-6 my-6">
-      {/* Frontend Snippet Card */}
-      <div className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm flex flex-col">
-        <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
-            <Code className="w-4 h-4 text-indigo-600" />
-            <span>Step 1: Frontend Client SDK</span>
+    <div className="space-y-6">
+      {/* Official Package Banner */}
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl p-5 border border-indigo-800/40 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-bold">
+            <Sparkles className="w-3 h-3 text-indigo-400" />
+            <span>Official Developer Package</span>
           </div>
-
-          <div className="flex items-center gap-2">
-            <div className="flex bg-slate-200/70 rounded-lg p-0.5 border border-slate-300 text-[11px]">
-              <button
-                type="button"
-                onClick={() => setFrontendTab("html")}
-                className={`px-2.5 py-1 rounded-md font-medium transition-all ${
-                  frontendTab === "html" ? "bg-white text-indigo-700 shadow-xs font-bold" : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                HTML / Vanilla
-              </button>
-              <button
-                type="button"
-                onClick={() => setFrontendTab("react")}
-                className={`px-2.5 py-1 rounded-md font-medium transition-all ${
-                  frontendTab === "react" ? "bg-white text-indigo-700 shadow-xs font-bold" : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                React / Next.js
-              </button>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => copyToClipboard(snippets[frontendTab], "frontend")}
-              className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-md bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-all shadow-xs"
-            >
-              {copiedKey === "frontend" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-              <span>{copiedKey === "frontend" ? "Copied!" : "Copy"}</span>
-            </button>
-          </div>
+          <h3 className="font-extrabold text-white text-base">Install `shieldcaptcha` on any laptop or server</h3>
+          <p className="text-xs text-slate-300">Run <code className="bg-white/10 px-1 py-0.5 rounded text-indigo-200">npm install shieldcaptcha</code> or download the standalone package for zero-config verification.</p>
         </div>
-
-        <pre className="p-4 text-xs font-mono text-slate-200 bg-[#0f172a] overflow-x-auto leading-relaxed flex-1 select-all">
-          <code>{snippets[frontendTab]}</code>
-        </pre>
+        <div className="flex items-center gap-2 shrink-0">
+          <a
+            href="/downloads/shieldcaptcha.zip"
+            download="shieldcaptcha.zip"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-xs"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Download Package (.zip)</span>
+          </a>
+        </div>
       </div>
 
-      {/* Backend Snippet Card */}
-      <div className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm flex flex-col">
-        <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
-            <Server className="w-4 h-4 text-emerald-600" />
-            <span>Step 2: Server Verification (/api/siteverify)</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <div className="flex bg-slate-200/70 rounded-lg p-0.5 border border-slate-300 text-[11px]">
-              {(["node", "python", "php", "go"] as const).map((b) => (
-                <button
-                  key={b}
-                  type="button"
-                  onClick={() => setBackendTab(b)}
-                  className={`px-2 py-1 rounded-md font-medium uppercase text-[10px] transition-all ${
-                    backendTab === b ? "bg-white text-indigo-700 shadow-xs font-bold" : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  {b}
-                </button>
-              ))}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Frontend Snippet Card */}
+        <div className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm flex flex-col">
+          <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+              <Code className="w-4 h-4 text-indigo-600" />
+              <span>Step 1: Frontend Widget Embed</span>
             </div>
 
-            <button
-              type="button"
-              onClick={() => copyToClipboard(snippets[backendTab], "backend")}
-              className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-md bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-all shadow-xs"
-            >
-              {copiedKey === "backend" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-              <span>{copiedKey === "backend" ? "Copied!" : "Copy"}</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <div className="flex bg-slate-200/70 rounded-lg p-0.5 border border-slate-300 text-[11px]">
+                <button
+                  type="button"
+                  onClick={() => setFrontendTab("html")}
+                  className={`px-2.5 py-1 rounded-md font-medium transition-all ${
+                    frontendTab === "html" ? "bg-white text-indigo-700 shadow-xs font-bold" : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  HTML / Vanilla
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFrontendTab("react")}
+                  className={`px-2.5 py-1 rounded-md font-medium transition-all ${
+                    frontendTab === "react" ? "bg-white text-indigo-700 shadow-xs font-bold" : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  React / Next.js
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => copyToClipboard(snippets[frontendTab], "frontend")}
+                className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-md bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-all shadow-xs"
+              >
+                {copiedKey === "frontend" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedKey === "frontend" ? "Copied!" : "Copy"}</span>
+              </button>
+            </div>
           </div>
+
+          <pre className="p-4 text-xs font-mono text-slate-200 bg-[#0f172a] overflow-x-auto leading-relaxed flex-1 select-all">
+            <code>{snippets[frontendTab]}</code>
+          </pre>
         </div>
 
-        <pre className="p-4 text-xs font-mono text-slate-200 bg-[#0f172a] overflow-x-auto leading-relaxed flex-1 select-all">
-          <code>{snippets[backendTab]}</code>
-        </pre>
+        {/* Backend Snippet Card */}
+        <div className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm flex flex-col">
+          <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+              <Server className="w-4 h-4 text-emerald-600" />
+              <span>Step 2: Server Verification</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="flex bg-slate-200/70 rounded-lg p-0.5 border border-slate-300 text-[11px]">
+                {(["package", "node", "python", "php", "go"] as const).map((b) => (
+                  <button
+                    key={b}
+                    type="button"
+                    onClick={() => setBackendTab(b)}
+                    className={`px-2 py-1 rounded-md font-medium transition-all ${
+                      backendTab === b ? "bg-white text-indigo-700 shadow-xs font-bold" : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    {b === "package" ? "NPM Package" : b.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => copyToClipboard(snippets[backendTab], "backend")}
+                className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-md bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-all shadow-xs"
+              >
+                {copiedKey === "backend" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedKey === "backend" ? "Copied!" : "Copy"}</span>
+              </button>
+            </div>
+          </div>
+
+          <pre className="p-4 text-xs font-mono text-slate-200 bg-[#0f172a] overflow-x-auto leading-relaxed flex-1 select-all">
+            <code>{snippets[backendTab]}</code>
+          </pre>
+        </div>
       </div>
     </div>
   );

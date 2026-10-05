@@ -35,6 +35,7 @@ import {
   Send,
   Clock,
   Fingerprint,
+  Download,
   X
 } from "lucide-react";
 
@@ -50,7 +51,7 @@ interface ApiKeyItem {
   active: boolean;
 }
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_CAPTCHA_API || "http://localhost:3000";
+const BACKEND_URL = process.env.NEXT_PUBLIC_CAPTCHA_API || "";
 
 export default function ApiKeysPage() {
   const [keys, setKeys] = useState<ApiKeyItem[]>([]);
@@ -484,6 +485,14 @@ func verifyShieldCaptcha(token, clientIP string) (bool, int) {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
+            <a
+              href="/downloads/shieldcaptcha.zip"
+              download="shieldcaptcha.zip"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-xs transition-all"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Download Package (.zip)
+            </a>
             <button
               onClick={() => setShowCreateModal(true)}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs transition-all"
@@ -491,6 +500,64 @@ func verifyShieldCaptcha(token, clientIP string) (bool, int) {
               <Plus className="w-4 h-4" />
               Generate New Key
             </button>
+          </div>
+        </div>
+
+        {/* Download & Multi-System Package Section */}
+        <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl p-6 shadow-md border border-indigo-800/40">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            <div className="space-y-2 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-[11px] font-semibold">
+                <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Multi-System &amp; Laptop Deployment Ready</span>
+              </div>
+              <h2 className="text-lg sm:text-xl font-extrabold tracking-tight text-white">
+                Download ShieldCaptcha Package for Any Laptop or Server
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                Download the complete standalone package or install via NPM on another laptop. Once installed, it automatically displays your machine information. Then simply paste your API keys from below to verify instantly!
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 shrink-0">
+              <a
+                href="/downloads/shieldcaptcha.zip"
+                download="shieldcaptcha.zip"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-sm transition-all active:scale-95"
+              >
+                <Download className="w-4 h-4" />
+                <span>Download Package (.zip)</span>
+              </a>
+              <a
+                href="/downloads/shieldcaptcha-4.2.0.tgz"
+                download="shieldcaptcha-4.2.0.tgz"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold transition-all"
+              >
+                <Terminal className="w-4 h-4" />
+                <span>NPM Tarball (.tgz)</span>
+              </a>
+            </div>
+          </div>
+
+          <div className="mt-5 pt-4 border-t border-indigo-800/40 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div className="bg-white/5 rounded-xl p-3.5 border border-white/10">
+              <div className="font-bold text-indigo-300 mb-1">1. Download &amp; Extract</div>
+              <p className="text-slate-400 text-[11px] leading-relaxed">
+                Download the package on your other laptop and run <code className="text-indigo-200 bg-white/10 px-1 py-0.5 rounded">npm install</code> to see your system details.
+              </p>
+            </div>
+            <div className="bg-white/5 rounded-xl p-3.5 border border-white/10">
+              <div className="font-bold text-indigo-300 mb-1">2. Copy API Keys</div>
+              <p className="text-slate-400 text-[11px] leading-relaxed">
+                Copy your Site Key and Secret Key from below and run <code className="text-indigo-200 bg-white/10 px-1 py-0.5 rounded">npx shieldcaptcha configure</code>.
+              </p>
+            </div>
+            <div className="bg-white/5 rounded-xl p-3.5 border border-white/10">
+              <div className="font-bold text-indigo-300 mb-1">3. Live Verification &amp; Demo</div>
+              <p className="text-slate-400 text-[11px] leading-relaxed">
+                Run <code className="text-indigo-200 bg-white/10 px-1 py-0.5 rounded">npx shieldcaptcha test</code> or <code className="text-indigo-200 bg-white/10 px-1 py-0.5 rounded">npx shieldcaptcha demo</code> to test in your browser!
+              </p>
+            </div>
           </div>
         </div>
 
