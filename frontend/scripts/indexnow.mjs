@@ -6,7 +6,11 @@
  * Note: Google does not support IndexNow.
  */
 
-const INDEXNOW_KEY = process.env.INDEXNOW_KEY || "a7f92e489c054b1f9b3628d01e479a25";
+const INDEXNOW_KEY = process.env.INDEXNOW_KEY;
+if (!INDEXNOW_KEY) {
+  console.log("[IndexNow] Skipping submission: INDEXNOW_KEY environment variable is not configured.");
+  process.exit(0);
+}
 const HOST = process.env.NEXT_PUBLIC_SITE_URL
   ? new URL(process.env.NEXT_PUBLIC_SITE_URL).host
   : "shieldcaptcha.vercel.app";

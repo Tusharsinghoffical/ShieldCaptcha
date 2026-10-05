@@ -12,7 +12,9 @@
     "keys": "node scripts/generate-keys.js",
     "docker:up": "docker compose up -d --build",
     "docker:down": "docker compose down",
-    "install:frontend": "npm --prefix frontend install"
+    "install:frontend": "npm --prefix frontend install",
+    "security:events": "node .security/monitor.js",
+    "security:audit": "node .security/run-audit.js"
   },
   "keywords": [
     "captcha",

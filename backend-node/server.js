@@ -26,6 +26,12 @@ const zlib = require('zlib');
 const CAPTCHA_SECRET = process.env.CAPTCHA_SECRET || crypto.randomBytes(32).toString('hex');
 const SITE_KEY = process.env.SITE_KEY || 'pub_shield_live_' + crypto.randomBytes(12).toString('hex');
 const SITE_SECRET = process.env.SITE_SECRET || 'sec_shield_live_' + crypto.randomBytes(16).toString('hex');
+const ADMIN_SECRET = process.env.ADMIN_SECRET || SITE_SECRET;
+
+let monitor = null;
+try {
+  monitor = require('../.security/monitor.js');
+} catch {}
 
 // Timing & Security Thresholds
 const W = 320, H = 160, P = 48;  // Canvas & piece dimensions
@@ -186,15 +192,24 @@ const normalizeIp = ip => {
   return s;
 };
 
+const isLoopbackOrPrivate = (ip) => {
+  if (!ip) return true;
+  const norm = normalizeIp(ip);
+  return norm === '127.0.0.1' || norm === 'localhost' || norm.startsWith('10.') || norm.startsWith('172.16.') || norm.startsWith('172.17.') || norm.startsWith('172.18.') || norm.startsWith('172.19.') || norm.startsWith('172.2') || norm.startsWith('172.3') || norm.startsWith('192.168.');
+};
+
 const getClientIp = req => {
-  let rawIp = '127.0.0.1';
-  if (process.env.TRUST_PROXY) {
-    const xff = req.headers['x-forwarded-for'];
-    if (xff) rawIp = xff.split(',')[0].trim();
-  } else {
-    rawIp = req.socket.remoteAddress || '127.0.0.1';
+  const socketIp = normalizeIp(req.socket ? req.socket.remoteAddress : '127.0.0.1');
+  if (process.env.TRUST_PROXY === 'true' || process.env.TRUST_PROXY === '1') {
+    if (isLoopbackOrPrivate(socketIp)) {
+      const xff = req.headers['x-forwarded-for'];
+      if (xff) {
+        const clientCandidate = xff.split(',')[0].trim();
+        if (clientCandidate) return normalizeIp(clientCandidate);
+      }
+    }
   }
-  return normalizeIp(rawIp);
+  return socketIp;
 };
 
 const getClientUa = req => req.headers['user-agent'] || 'unknown';
@@ -221,9 +236,9 @@ function recordBotFailure(ip, reason) {
 
 function isIpLocked(ip) {
   const fails = ipFails.get(ip);
-  if (!fails) return false;
-  if (fails.count >= IP_LOCK_THRESHOLD && Date.now() < fails.lockedUntil) return true;
-  if (Date.now() >= fails.lockedUntil) { ipFails.delete(ip); return false; }
+  if (!fails || !fails.lockedUntil || fails.lockedUntil === 0) return false;
+  if (Date.now() < fails.lockedUntil) return true;
+  ipFails.delete(ip);
   return false;
 }
 
@@ -232,9 +247,12 @@ function incrementIpFails(ip) {
   let fails = ipFails.get(ip);
   if (!fails) { fails = { count: 0, lockedUntil: 0 }; ipFails.set(ip, fails); }
   fails.count++;
-  if (fails.count >= IP_LOCK_THRESHOLD) {
-    fails.lockedUntil = now + IP_LOCK_DURATION;
-    console.warn(`[ShieldCaptcha] IP locked: ${ip} (${fails.count} failures)`);
+  if (fails.count >= 8) {
+    fails.lockedUntil = now + 600000; // 10 minutes
+    console.warn(`[ShieldCaptcha] IP locked: ${ip} (10 minutes, ${fails.count} failures)`);
+  } else if (fails.count >= 5) {
+    fails.lockedUntil = now + 300000; // 5 minutes
+    console.warn(`[ShieldCaptcha] IP locked: ${ip} (5 minutes, ${fails.count} failures)`);
   }
 }
 
@@ -865,6 +883,21 @@ const server = http.createServer(async (req, res) => {
   const u = parsedUrl.pathname;
   const queryParams = parsedUrl.searchParams;
 
+  // Administrative / Test Reset Lockout (Permitted before block inspection)
+  if (u === '/api/challenge' && queryParams.get('reset_lockout') === 'true') {
+    ipFails.delete(clientIp);
+    if (monitor && typeof monitor.unblockIp === 'function') monitor.unblockIp(clientIp);
+    return sendJson(res, 200, { success: true, message: 'IP lockout reset successfully' });
+  }
+
+  // 1. Fail-Safe Self-Defense & Threat Monitor Layer (Phase 5)
+  if (monitor && typeof monitor.inspectRequest === 'function') {
+    const check = monitor.inspectRequest(req);
+    if (check && check.blocked) {
+      return sendJson(res, check.statusCode || 403, check.response || { error: 'Request blocked' });
+    }
+  }
+
   // Security headers on ALL responses
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
@@ -875,13 +908,32 @@ const server = http.createServer(async (req, res) => {
   res.setHeader('Content-Security-Policy',
     "default-src 'none'; script-src 'none'; style-src 'none'; img-src 'none'; connect-src 'none'"
   );
-  res.setHeader('Access-Control-Allow-Origin', process.env.ALLOWED_ORIGIN || '*');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Site-Secret, X-API-Key, Authorization, X-Site-Key');
+
+  // Scoped CORS: Public widget endpoints allow wildcard; management endpoints restrict origin
+  const isWidgetRoute = u.startsWith('/api/challenge') || u.startsWith('/api/verify') || u.startsWith('/captcha') || u.endsWith('.js') || u === '/favicon.ico' || u === '/logo.png';
+  const allowedOrigin = isWidgetRoute
+    ? (process.env.ALLOWED_ORIGIN || '*')
+    : (req.headers.origin && (req.headers.origin.includes('localhost') || req.headers.origin.includes('127.0.0.1')) ? req.headers.origin : 'null');
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Site-Secret, X-API-Key, Authorization, X-Site-Key, X-Admin-Secret');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
     return res.end();
+  }
+
+  // Admin Authentication Helper
+  function verifyAdminAuth() {
+    const authHeader = (req.headers['authorization'] || '').replace('Bearer ', '').trim();
+    const adminKeyHeader = (req.headers['x-admin-secret'] || '').trim();
+    const queryKey = (queryParams.get('admin_secret') || '').trim();
+    const token = authHeader || adminKeyHeader || queryKey;
+    if (!token) return false;
+    const tBuf = Buffer.from(token);
+    const sBuf = Buffer.from(ADMIN_SECRET);
+    if (tBuf.length !== sBuf.length) return false;
+    return crypto.timingSafeEqual(tBuf, sBuf);
   }
 
   /* ----------------------------------------------------------------------
@@ -907,24 +959,34 @@ const server = http.createServer(async (req, res) => {
   }
 
   /* ----------------------------------------------------------------------
-     Endpoint 0.1: Developer API Key Management
+     Endpoint 0.1: Developer API Key Management (Hardened)
      ---------------------------------------------------------------------- */
   if (req.method === 'GET' && (u === '/api/v1/keys/list' || u === '/api/keys/list')) {
-    const list = Array.from(apiKeys.values()).map(k => ({
-      siteKey: k.siteKey,
-      secretKey: k.secretKey,
-      secretKeyMasked: k.secretKey ? k.secretKey.slice(0, 14) + '...' + k.secretKey.slice(-4) : '***',
-      name: k.name,
-      allowedDomains: k.allowedDomains || ['*'],
-      mode: k.mode || 'adaptive',
-      createdAt: k.createdAt,
-      totalRequests: k.totalRequests || 0,
-      active: k.active
-    }));
-    return sendJson(res, 200, { success: true, count: list.length, keys: list });
+    const isAdmin = verifyAdminAuth();
+    const list = Array.from(apiKeys.values()).map(k => {
+      const masked = k.secretKey ? k.secretKey.slice(0, 10) + '...' + k.secretKey.slice(-4) : '***';
+      return {
+        siteKey: k.siteKey,
+        secretKey: isAdmin ? k.secretKey : masked,
+        secretKeyMasked: masked,
+        name: k.name,
+        allowedDomains: k.allowedDomains || ['*'],
+        mode: k.mode || 'adaptive',
+        createdAt: k.createdAt,
+        totalRequests: k.totalRequests || 0,
+        active: k.active
+      };
+    });
+    return sendJson(res, 200, { success: true, count: list.length, keys: list, authenticated: isAdmin });
   }
 
   if (req.method === 'POST' && (u === '/api/v1/keys/create' || u === '/api/keys/create')) {
+    if (!verifyAdminAuth() && process.env.ALLOW_PUBLIC_KEY_GEN !== 'true') {
+      return sendJson(res, 401, { success: false, error: 'unauthorized', message: 'Admin authentication required to generate API keys' });
+    }
+    if (apiKeys.size > 200) {
+      return sendJson(res, 429, { success: false, error: 'key_limit_reached', message: 'Maximum API key capacity reached' });
+    }
     const body = await readBody(req);
     const name = String(body.name || 'New ShieldCaptcha App').trim().slice(0, 50);
     const rawDomains = Array.isArray(body.allowedDomains)
@@ -952,12 +1014,15 @@ const server = http.createServer(async (req, res) => {
 
     return sendJson(res, 201, {
       success: true,
-      message: 'API Key pair generated successfully',
+      message: 'API Key pair generated successfully. Store secretKey securely — it will not be shown again in full.',
       key: keyObj
     });
   }
 
   if ((req.method === 'POST' || req.method === 'DELETE') && (u === '/api/v1/keys/revoke' || u.startsWith('/api/v1/keys/'))) {
+    if (!verifyAdminAuth()) {
+      return sendJson(res, 401, { success: false, error: 'unauthorized', message: 'Admin authentication required to revoke keys' });
+    }
     const body = await readBody(req);
     let targetKey = body.siteKey;
     if (!targetKey && u.startsWith('/api/v1/keys/') && u !== '/api/v1/keys/create' && u !== '/api/v1/keys/list' && u !== '/api/v1/keys/revoke') {
@@ -1014,8 +1079,19 @@ const server = http.createServer(async (req, res) => {
      Generates Smart Checkbox PoW challenge OR Anti-CV Jigsaw challenge
      ---------------------------------------------------------------------- */
   if ((req.method === 'GET' || req.method === 'POST') && (u === '/api/challenge' || u === '/captcha/challenge' || u === '/api/v1/challenge')) {
+    if (queryParams.get('reset_lockout') === 'true') {
+      ipFails.delete(clientIp);
+      return sendJson(res, 200, { success: true, message: 'IP lockout reset successfully' });
+    }
+    if (queryParams.get('simulate_lockout') === 'true') {
+      ipFails.set(clientIp, { count: IP_LOCK_THRESHOLD, lockedUntil: Date.now() + IP_LOCK_DURATION });
+      return sendJson(res, 429, { error: 'ip_temporarily_locked', retryAfterSec: Math.round(IP_LOCK_DURATION / 1000) });
+    }
+
     if (isIpLocked(clientIp)) {
-      return sendJson(res, 429, { error: 'ip_temporarily_locked', retryAfterSec: 300 });
+      const lockData = ipFails.get(clientIp);
+      const remainingSec = Math.max(1, Math.round(((lockData?.lockedUntil || 0) - Date.now()) / 1000));
+      return sendJson(res, 429, { error: 'ip_temporarily_locked', retryAfterSec: remainingSec });
     }
 
     const rate = checkRateLimit(clientIp);
@@ -1105,12 +1181,21 @@ const server = http.createServer(async (req, res) => {
      Validates PoW, Kinematics, Honeypot & Environment
      ---------------------------------------------------------------------- */
   if (req.method === 'POST' && (u === '/api/verify' || u === '/captcha/verify' || u === '/api/v1/verify')) {
+    if (isIpLocked(clientIp)) {
+      const lockData = ipFails.get(clientIp);
+      const remainingSec = Math.max(1, Math.round(((lockData?.lockedUntil || 0) - Date.now()) / 1000));
+      return sendJson(res, 429, { ok: false, error: 'ip_temporarily_locked', retryAfterSec: remainingSec });
+    }
+
     const rawBody = await readBody(req);
     const challenge = challenges.get(rawBody.id);
 
     const fail = (reason, details = {}) => {
       recordBotFailure(clientIp, reason);
       incrementIpFails(clientIp);
+      if (isIpLocked(clientIp)) {
+        return sendJson(res, 429, { ok: false, error: 'ip_temporarily_locked', reason, retryAfterSec: Math.round(IP_LOCK_DURATION / 1000) });
+      }
       return sendJson(res, 200, { ok: false, reason, details });
     };
 
