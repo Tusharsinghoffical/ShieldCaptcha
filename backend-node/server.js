@@ -1022,7 +1022,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === 'POST' && (u === '/api/v1/keys/create' || u === '/api/keys/create')) {
-    if (!verifyAdminAuth() && process.env.ALLOW_PUBLIC_KEY_GEN === 'false') {
+    if (!verifyAdminAuth() && process.env.ALLOW_PUBLIC_KEY_GEN !== 'true') {
       return sendJson(res, 401, { success: false, error: 'unauthorized', message: 'Admin authentication required to generate API keys' });
     }
     if (apiKeys.size > 200) {
