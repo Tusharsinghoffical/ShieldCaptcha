@@ -1,0 +1,29 @@
+[Unit]
+Description=ShieldCaptcha Enterprise Developer Portal (Next.js)
+After=network.target shieldcaptcha-backend.service
+Wants=shieldcaptcha-backend.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/shieldcaptcha/frontend
+Environment=NODE_ENV=production
+Environment=PORT=3001
+Environment=HOSTNAME=0.0.0.0
+Environment=CAPTCHA_BACKEND_URL=http://127.0.0.1:3000
+EnvironmentFile=-/var/www/shieldcaptcha/.env
+ExecStart=/usr/bin/npm start
+Restart=always
+RestartSec=5s
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=shieldcaptcha-frontend
+
+# Security Sandboxing
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,79 @@
+# =====================================================================
+# ShieldCaptcha Enterprise - Docker Compose (Standard Stack)
+# =====================================================================
+
+services:
+  # Core Zero-Dependency Defense Engine
+  backend:
+    build:
+      context: ./backend-node
+      dockerfile: Dockerfile
+    container_name: shieldcaptcha-backend
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOST=0.0.0.0
+      - SITE_KEY=${SITE_KEY:-pub_shield_live_production}
+      - SITE_SECRET=${SITE_SECRET:-sec_shield_live_production_secret_key_change_me}
+      - CAPTCHA_SECRET=${CAPTCHA_SECRET:-enterprise_captcha_hmac_secret_2026_change_me}
+      - HEALTH_CHECK_SECRET=${HEALTH_CHECK_SECRET:-shield_health_secret_2026}
+      - TRUST_PROXY=${TRUST_PROXY:-true}
+      - ALLOWED_ORIGIN=${ALLOWED_ORIGIN:-*}
+    networks:
+      - shieldcaptcha-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:3000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  # Next.js 16 Developer Portal & Interactive Showcase
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        CAPTCHA_BACKEND_URL: http://backend:3000
+        NEXT_PUBLIC_SITE_KEY: ${SITE_KEY:-pub_shield_live_production}
+    container_name: shieldcaptcha-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3001}:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - HOSTNAME=0.0.0.0
+      - CAPTCHA_BACKEND_URL=http://backend:3000
+      - NEXT_PUBLIC_SITE_KEY=${SITE_KEY:-pub_shield_live_production}
+      - CAPTCHA_SECRET=${CAPTCHA_SECRET:-enterprise_captcha_hmac_secret_2026_change_me}
+      - SITE_SECRET=${SITE_SECRET:-sec_shield_live_production_secret_key_change_me}
+      - HEALTH_CHECK_SECRET=${HEALTH_CHECK_SECRET:-shield_health_secret_2026}
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - shieldcaptcha-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:3001/api/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+networks:
+  shieldcaptcha-net:
+    driver: bridge

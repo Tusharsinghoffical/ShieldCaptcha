@@ -1,0 +1,28 @@
+[Unit]
+Description=ShieldCaptcha Enterprise Core Defense Engine (Node.js)
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/shieldcaptcha/backend-node
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=HOST=0.0.0.0
+Environment=TRUST_PROXY=true
+EnvironmentFile=-/var/www/shieldcaptcha/.env
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=5s
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=shieldcaptcha-backend
+
+# Security Sandboxing
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

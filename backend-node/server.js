@@ -900,6 +900,9 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === 'GET' && (u === '/api/v1/openapi.json' || u === '/openapi.json')) {
+    if (process.env.EXPOSE_OPENAPI !== 'true') {
+      return sendJson(res, 404, { error: 'not_found' });
+    }
     return sendJson(res, 200, OPENAPI_SPEC);
   }
 
@@ -1538,13 +1541,13 @@ setInterval(() => {
 }, 60000).unref();
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
-server.listen(PORT, () => {
+const HOST = process.env.HOST || '0.0.0.0';
+server.listen(PORT, HOST, () => {
   console.log(`====================================================`);
   console.log(`[SHIELD] ShieldCaptcha Enterprise v4.2 - Developer REST API Edition`);
-  console.log(`[SERVER] Listening on http://localhost:${PORT}`);
+  console.log(`[SERVER] Listening on http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}`);
   console.log(`[KEY]    SITE_KEY:    ${SITE_KEY}`);
   console.log(`[SECRET] SITE_SECRET: ${SITE_SECRET}`);
-  console.log(`[SPEC]   OpenAPI:     http://localhost:${PORT}/api/v1/openapi.json`);
   console.log(`[API]    Siteverify:  POST http://localhost:${PORT}/api/v1/siteverify`);
   console.log(`[CRYPTO] AES-CBC-128 payload encryption enabled`);
   console.log(`[CONFIG] BASE_POW_BITS=${BASE_POW_BITS} | MAX_POW_BITS=${MAX_POW_BITS} | IP_LOCK_THRESHOLD=${IP_LOCK_THRESHOLD}`);

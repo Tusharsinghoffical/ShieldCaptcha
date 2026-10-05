@@ -127,15 +127,9 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <a
-                  href="http://localhost:3000/api/v1/openapi.json"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-indigo-600 transition-colors flex items-center justify-between"
-                >
-                  <span>OpenAPI 3.0 Spec</span>
-                  <ArrowUpRight className="w-3 h-3 text-slate-400" />
-                </a>
+                <Link href="/demo" className="hover:text-indigo-600 transition-colors block">
+                  Interactive Simulator
+                </Link>
               </li>
             </ul>
           </div>

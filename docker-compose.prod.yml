@@ -1,0 +1,105 @@
+# =====================================================================
+# ShieldCaptcha Enterprise - Production Compose Stack (with NGINX & SSL)
+# =====================================================================
+
+services:
+  # NGINX High-Performance Reverse Proxy & Edge Router
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: shieldcaptcha-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    networks:
+      - shieldcaptcha-net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  # Core Zero-Dependency Defense Engine
+  backend:
+    build:
+      context: ./backend-node
+      dockerfile: Dockerfile
+    container_name: shieldcaptcha-backend
+    restart: always
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOST=0.0.0.0
+      - SITE_KEY=${SITE_KEY}
+      - SITE_SECRET=${SITE_SECRET}
+      - CAPTCHA_SECRET=${CAPTCHA_SECRET}
+      - HEALTH_CHECK_SECRET=${HEALTH_CHECK_SECRET}
+      - TRUST_PROXY=true
+      - ALLOWED_ORIGIN=${ALLOWED_ORIGIN:-*}
+    networks:
+      - shieldcaptcha-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:3000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  # Next.js 16 Developer Portal & Interactive Showcase
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        CAPTCHA_BACKEND_URL: http://backend:3000
+        NEXT_PUBLIC_SITE_KEY: ${SITE_KEY}
+    container_name: shieldcaptcha-frontend
+    restart: always
+    expose:
+      - "3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - HOSTNAME=0.0.0.0
+      - CAPTCHA_BACKEND_URL=http://backend:3000
+      - NEXT_PUBLIC_SITE_KEY=${SITE_KEY}
+      - CAPTCHA_SECRET=${CAPTCHA_SECRET}
+      - SITE_SECRET=${SITE_SECRET}
+      - HEALTH_CHECK_SECRET=${HEALTH_CHECK_SECRET}
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - shieldcaptcha-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:3001/api/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+networks:
+  shieldcaptcha-net:
+    driver: bridge

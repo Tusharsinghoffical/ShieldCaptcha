@@ -9,7 +9,10 @@
     "build": "npm --prefix frontend run build",
     "start": "npm --prefix frontend start",
     "start:backend": "node backend-node/server.js",
-    "postinstall": "npm --prefix frontend install"
+    "keys": "node scripts/generate-keys.js",
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down",
+    "install:frontend": "npm --prefix frontend install"
   },
   "keywords": [
     "captcha",

@@ -3,7 +3,6 @@
 ShieldCaptcha provides an enterprise-grade REST API for bot defense, human verification, multi-tenant API key management, and server-to-server token validation.
 
 - **Base URL:** `http://localhost:3000` (or your configured production domain)
-- **OpenAPI 3.0 Specification:** `GET /api/v1/openapi.json`
 - **Supported Encodings:** `application/json` and `application/x-www-form-urlencoded`
 
 ---

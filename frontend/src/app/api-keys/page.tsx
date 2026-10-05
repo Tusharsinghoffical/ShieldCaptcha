@@ -484,17 +484,6 @@ func verifyShieldCaptcha(token, clientIP string) (bool, int) {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
-            <a
-              href={`${BACKEND_URL}/api/v1/openapi.json`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs transition-all"
-            >
-              <FileCode className="w-3.5 h-3.5 text-indigo-600" />
-              OpenAPI 3.0
-              <ExternalLink className="w-3 h-3 text-slate-400" />
-            </a>
-
             <button
               onClick={() => setShowCreateModal(true)}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs transition-all"

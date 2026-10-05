@@ -210,35 +210,57 @@ npm --prefix frontend run lint
 
 ## Deployment
 
-### Vercel (Serverless)
+For full end-to-end production deployment instructions on Linux VPS, AWS, DigitalOcean, Docker, PM2, and Kubernetes, see the comprehensive [docs/DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md).
 
-The repository includes [vercel.json](vercel.json) preconfigured for Next.js. The frontend includes a built-in serverless execution layer that operates independently or proxies to a dedicated backend when `CAPTCHA_BACKEND_URL` is set.
+### 1. Docker Compose (Recommended for Any Cloud VPS)
+
+The fastest and most reliable way to run the entire stack on any server:
+
+```bash
+# 1. Generate cryptographically secure keys into .env
+node scripts/generate-keys.js --write
+
+# 2. Launch production stack in background
+docker compose up -d --build
+
+# Alternatively, launch with automated NGINX reverse proxy & SSL:
+./scripts/deploy.sh --prod
+```
+
+### 2. Linux VPS with PM2 (Bare-Metal / Ubuntu)
+
+To run natively on Ubuntu/Debian using PM2 process supervisor:
+
+```bash
+# Install dependencies & compile frontend
+npm install
+npm run build
+
+# Start services using the preconfigured PM2 ecosystem
+pm2 start ecosystem.config.js --env production
+pm2 save && pm2 startup
+```
+
+*(Systemd service unit definitions are also available in `systemd/`).*
+
+### 3. Vercel (Serverless Edge)
+
+The repository includes [vercel.json](vercel.json) preconfigured for Next.js:
 
 1. Import the repository into Vercel.
 2. Keep the root directory as `./` or set to `frontend`.
-3. Configure optional environment variables (`CAPTCHA_SECRET`, `HEALTH_CHECK_SECRET`).
+3. Set `CAPTCHA_BACKEND_URL` to your remote backend engine, or leave empty to use the frontend's built-in serverless fallback engine.
 4. Trigger the deployment.
 
-### Standalone Node.js Server
-
-Run the core engine directly on any Linux/Unix/Windows server:
-
-```bash
-cd backend-node
-PORT=3000 node server.js
-```
-
-### Health Check
+### 4. Health Check & Diagnostics
 
 Verify service availability via the health check endpoint:
 
 ```bash
+# Basic Health Check
 curl http://localhost:3000/api/health
-```
 
-To view extended diagnostics, supply the configured secret:
-
-```bash
+# Extended Diagnostics (Supply your configured secret)
 curl "http://localhost:3000/api/health?key=your-health-secret-key-here&deep=true"
 ```
 
