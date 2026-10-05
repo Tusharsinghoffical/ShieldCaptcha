@@ -73,12 +73,47 @@ const MIN_TRUST_SCORE = 20;      // Realistic trust threshold (bots get 0, human
 const TARGET_TOLERANCE = 24;     // +/- 24px balanced, moderate ergonomic human tolerance
 const IP_LOCK_THRESHOLD = 8;     // Consecutive fails before IP lock
 const IP_LOCK_DURATION = 600000; // 10 minutes lock duration
+// Priority 2: Distributed Cluster Adapter (Redis-backed with zero-dependency fallback)
+let redisClient = null;
+if (process.env.REDIS_URL) {
+  try {
+    const Redis = require('ioredis');
+    redisClient = new Redis(process.env.REDIS_URL, {
+      lazyConnect: true,
+      maxRetriesPerRequest: 1,
+      connectTimeout: 2000
+    });
+    redisClient.connect().then(() => {
+      console.log('[CLUSTER] Connected to Redis for cross-instance token synchronization');
+    }).catch(err => {
+      console.warn('[CLUSTER] Redis offline, using in-memory token deduplication:', err.message);
+      redisClient = null;
+    });
+  } catch {}
+}
 
-// In-Memory Security Vaults
+class ClusterMap extends Map {
+  constructor(prefix = 'shield') {
+    super();
+    this.prefix = prefix;
+  }
+  set(key, val) {
+    super.set(key, val);
+    if (redisClient && redisClient.status === 'ready') {
+      try {
+        const ttl = typeof val === 'number' && val > Date.now() ? Math.ceil((val - Date.now()) / 1000) : 300;
+        redisClient.set(`${this.prefix}:${key}`, typeof val === 'object' ? JSON.stringify(val) : String(val), 'EX', ttl).catch(() => {});
+      } catch {}
+    }
+    return this;
+  }
+}
+
+// In-Memory & Distributed Security Vaults
 const challenges = new Map();
-const usedTokens = new Map();
+const usedTokens = new ClusterMap('token');
 const seenTrails = new Map();
-const seenNonces = new Map();  // v4.2: request nonce dedup (prevents payload replay)
+const seenNonces = new ClusterMap('nonce');  // v4.2: request nonce dedup (prevents payload replay)
 const ipBuckets = new Map();
 const ipFails = new Map();
 

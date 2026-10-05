@@ -40,5 +40,8 @@ Thumbs.db
 *.swp
 *.swo
 
-# Security Audit artifacts & monitor DB
-.security/
+# Security Audit runtime databases & alert logs
+.security/*.sqlite
+.security/*.log
+.security/*.db
+.security/__pycache__/

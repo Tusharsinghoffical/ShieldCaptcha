@@ -26,6 +26,10 @@ export async function proxyToBackend(req: NextRequest, endpoint: string) {
         }
       });
 
+      if (process.env.ADMIN_SECRET) {
+        headers.set("x-admin-secret", process.env.ADMIN_SECRET);
+      }
+
       const init: RequestInit = {
         method: req.method,
         headers,
@@ -66,7 +70,7 @@ export async function proxyToBackend(req: NextRequest, endpoint: string) {
 
     // API Key Management Routes
     if (endpoint === "/api/v1/keys/list" || endpoint === "/api/keys/list") {
-      const keys = serverlessEngine.listApiKeys(true);
+      const keys = serverlessEngine.listApiKeys(false);
       return NextResponse.json({ success: true, count: keys.length, keys }, { status: 200, headers: CORS_HEADERS });
     }
 
