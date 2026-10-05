@@ -401,6 +401,11 @@
         @keyframes sc-spin { to { transform: rotate(360deg); } }
         @keyframes sc-pulse { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }
         @keyframes sc-shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+        @keyframes sc-guide-bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+        @keyframes sc-guide-slide { 0%,100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
+        @keyframes sc-guide-slide-left { 0%,100% { transform: translateX(0); } 50% { transform: translateX(-5px); } }
+        @keyframes sc-guide-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+        @keyframes sc-warn-blink { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
         .sc-chk-btn:hover { border-color: #818cf8 !important; box-shadow: 0 4px 16px rgba(99,102,241,0.25) !important; }
         .sc-knob:active { cursor: grabbing !important; transform: scale(1.05); }
         .sc-shake { animation: sc-shake 0.4s ease; }
@@ -458,6 +463,43 @@
 
       <!-- VIEW B: Biomechanical Jigsaw Slider Card -->
       <div class="sc-view-jigsaw" style="display: none; width: 100%;">
+        <!-- Top Animated Suggestion & Attempt Helper Bar -->
+        <div class="sc-top-guide" style="
+          margin-bottom: 8px;
+          padding: 6px 10px;
+          background: #f8fafc;
+          border: 1px solid #cbd5e1;
+          border-radius: 9px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          font-size: 11px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+          transition: all 0.2s ease;
+          box-sizing: border-box;
+        ">
+          <div class="sc-guide-content" style="display: flex; align-items: center; gap: 6px; color: #334155; font-weight: 500; min-height: 18px; overflow: hidden; max-width: 220px;">
+            <span class="sc-guide-icon" style="font-size: 13px; display: inline-flex; animation: sc-guide-bounce 1.5s ease-in-out infinite;">💡</span>
+            <span class="sc-guide-msg" style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">Slider ko slide karke slot me fit karein</span>
+          </div>
+          <div class="sc-attempt-badge" style="
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 7px;
+            border-radius: 6px;
+            background: #ffffff;
+            color: #475569;
+            font-size: 10px;
+            font-weight: 600;
+            border: 1px solid #cbd5e1;
+            flex-shrink: 0;
+          ">
+            <span class="sc-attempt-dot" style="width: 5px; height: 5px; border-radius: 50%; background: #10b981;"></span>
+            <span class="sc-attempt-text">Attempt 1/3</span>
+          </div>
+        </div>
+
         <div class="sc-card" style="
           position: relative;
           width: ${W}px;
@@ -620,6 +662,83 @@
     const badgeDot     = root.querySelector('.sc-dot');
     const knobArrow    = root.querySelector('.sc-knob-arrow');
     const knobCheck    = root.querySelector('.sc-knob-check');
+    const topGuide     = root.querySelector('.sc-top-guide');
+    const guideIcon    = root.querySelector('.sc-guide-icon');
+    const guideMsg     = root.querySelector('.sc-guide-msg');
+    const attemptBadge = root.querySelector('.sc-attempt-badge');
+    const attemptDot   = root.querySelector('.sc-attempt-dot');
+    const attemptText  = root.querySelector('.sc-attempt-text');
+
+    let attemptCount = 0;
+    const MAX_ATTEMPTS = 3;
+
+    function updateAttemptBadge() {
+      if (!attemptBadge || !attemptText || !attemptDot) return;
+      const current = Math.min(attemptCount + 1, MAX_ATTEMPTS);
+      attemptText.textContent = `Attempt ${current}/${MAX_ATTEMPTS}`;
+      if (current === 1) {
+        attemptDot.style.background = '#10b981';
+        attemptBadge.style.borderColor = '#cbd5e1';
+        attemptBadge.style.color = '#475569';
+      } else if (current === 2) {
+        attemptDot.style.background = '#f59e0b';
+        attemptBadge.style.borderColor = '#fcd34d';
+        attemptBadge.style.color = '#b45309';
+      } else {
+        attemptDot.style.background = '#ef4444';
+        attemptBadge.style.borderColor = '#fca5a5';
+        attemptBadge.style.color = '#b91c1c';
+      }
+    }
+
+    function setTopGuide(state, message, customIcon = null) {
+      if (!topGuide || !guideIcon || !guideMsg) return;
+      guideMsg.textContent = message;
+
+      if (state === 'match') {
+        topGuide.style.background = 'rgba(16, 185, 129, 0.12)';
+        topGuide.style.borderColor = '#10b981';
+        topGuide.style.boxShadow = '0 0 10px rgba(16, 185, 129, 0.25)';
+        guideMsg.style.color = '#047857';
+        guideIcon.textContent = customIcon || '✨';
+        guideIcon.style.animation = 'sc-guide-pulse 0.5s ease-in-out infinite';
+      } else if (state === 'right') {
+        topGuide.style.background = 'rgba(99, 102, 241, 0.08)';
+        topGuide.style.borderColor = 'rgba(99, 102, 241, 0.35)';
+        topGuide.style.boxShadow = '0 1px 3px rgba(0,0,0,0.03)';
+        guideMsg.style.color = '#4338ca';
+        guideIcon.textContent = customIcon || '👉';
+        guideIcon.style.animation = 'sc-guide-slide 0.7s ease-in-out infinite';
+      } else if (state === 'left') {
+        topGuide.style.background = 'rgba(245, 158, 11, 0.1)';
+        topGuide.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+        topGuide.style.boxShadow = '0 1px 3px rgba(0,0,0,0.03)';
+        guideMsg.style.color = '#b45309';
+        guideIcon.textContent = customIcon || '👈';
+        guideIcon.style.animation = 'sc-guide-slide-left 0.7s ease-in-out infinite';
+      } else if (state === 'warning') {
+        topGuide.style.background = 'rgba(239, 68, 68, 0.1)';
+        topGuide.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+        topGuide.style.boxShadow = '0 0 10px rgba(239, 68, 68, 0.2)';
+        guideMsg.style.color = '#b91c1c';
+        guideIcon.textContent = customIcon || '⚠️';
+        guideIcon.style.animation = 'sc-warn-blink 0.6s ease-in-out infinite';
+      } else if (state === 'success') {
+        topGuide.style.background = 'rgba(16, 185, 129, 0.15)';
+        topGuide.style.borderColor = '#10b981';
+        topGuide.style.boxShadow = '0 0 12px rgba(16, 185, 129, 0.25)';
+        guideMsg.style.color = '#047857';
+        guideIcon.textContent = customIcon || '🎉';
+        guideIcon.style.animation = 'sc-guide-bounce 0.6s ease infinite';
+      } else {
+        topGuide.style.background = '#f8fafc';
+        topGuide.style.borderColor = '#cbd5e1';
+        topGuide.style.boxShadow = '0 1px 3px rgba(0,0,0,0.03)';
+        guideMsg.style.color = '#334155';
+        guideIcon.textContent = customIcon || '💡';
+        guideIcon.style.animation = 'sc-guide-bounce 1.5s ease-in-out infinite';
+      }
+    }
 
     let currentChallenge = null;
     let powPromise = null;
@@ -639,13 +758,23 @@
       const currentPx = getPieceX();
 
       if (currentChallenge && typeof currentChallenge.targetX === 'number') {
-        const dist = Math.abs(currentPx - currentChallenge.targetX);
-        if (dist <= 18) {
+        const diff = currentPx - currentChallenge.targetX;
+        if (Math.abs(diff) <= 22) {
           pieceImg.style.filter = 'drop-shadow(0 0 14px #10b981) drop-shadow(0 0 6px #34d399)';
           knob.style.boxShadow = '0 0 16px rgba(16, 185, 129, 0.7)';
+          if (isDragging) {
+            setTopGuide('match', '✨ Perfect match! Yahi chhod dein (Release now)');
+          }
         } else {
           pieceImg.style.filter = 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5))';
           knob.style.boxShadow = '0 4px 12px rgba(79, 70, 229, 0.5)';
+          if (isDragging) {
+            if (diff < -22) {
+              setTopGuide('right', '👉 Aage slide karein slot ki taraf (Slide right)');
+            } else {
+              setTopGuide('left', '👈 Aage nikal gaye! Thoda piche karein (Move left)');
+            }
+          }
         }
       }
 
@@ -737,6 +866,8 @@
         overlay.style.opacity = '0';
         overlay.style.pointerEvents = 'none';
         setStatus('Slide the puzzle piece to fit');
+        updateAttemptBadge();
+        setTopGuide('normal', 'Slider ko slide karke piece ko slot me fit karein');
       } catch {
         overlay.style.opacity = '1';
         loadText.textContent = 'Network error.';
@@ -826,6 +957,7 @@
           chkLabel.textContent = 'Security check needed';
           chkSub.textContent = 'Escalating to puzzle…';
           setTimeout(() => {
+            attemptCount = 0;
             renderModeView('jigsaw');
             currentChallenge = result.challenge;
             bgImg.src = result.challenge.bg;
@@ -839,6 +971,8 @@
               overlay.style.opacity = '0';
               overlay.style.pointerEvents = 'none';
               setStatus('Security check: slide piece to verify');
+              updateAttemptBadge();
+              setTopGuide('warning', '⚠️ Step-up check: Piece ko slot me match karein');
             });
           }, 450);
           return;
@@ -902,6 +1036,7 @@
       knobStartX = knobX;
       knob.setPointerCapture(e.pointerId);
       promptText.style.opacity = '0.3';
+      setTopGuide('right', '👉 Slider ko aage slide karein slot tak');
       recordPoint(e);
     });
 
@@ -924,9 +1059,18 @@
       if (dragElapsedMs < 60) {
         isSubmitting = false;
         failCount++;
-        setStatus('Drag too fast: human movement required', '#ef4444');
+        attemptCount++;
+        updateAttemptBadge();
         shakeWidget();
-        setTimeout(() => initChallenge('jigsaw'), 900);
+        if (attemptCount >= MAX_ATTEMPTS) {
+          setTopGuide('warning', '⚠️ Max 3 attempts used! Naya puzzle generate ho raha hai...');
+          setStatus('Max attempts reached. Refreshing...', '#ef4444');
+          setTimeout(() => { attemptCount = 0; initChallenge('jigsaw'); }, 1400);
+        } else {
+          setTopGuide('warning', `⚠️ Drag bahut tez tha! Aise nahi, aaram se slide karein (${attemptCount}/${MAX_ATTEMPTS})`);
+          setStatus('Drag too fast: human movement required', '#ef4444');
+          setTimeout(() => initChallenge('jigsaw'), 1200);
+        }
         return;
       }
 
@@ -977,6 +1121,9 @@
           isSolved = true;
           isReady = false;
           failCount = 0;
+          attemptCount = 0;
+          updateAttemptBadge();
+          setTopGuide('success', '🎉 Shabash! Perfect match — Human Verified');
           knob.style.background = 'linear-gradient(135deg, #10b981, #059669)';
           knob.style.boxShadow = '0 4px 14px rgba(16, 185, 129, 0.6)';
           knobArrow.style.display = 'none';
@@ -987,16 +1134,31 @@
           onToken(result.token, result.audit);
         } else {
           failCount++;
+          attemptCount++;
+          updateAttemptBadge();
           knob.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
           badgeDot.style.background = '#ef4444';
           badgeText.textContent = 'Anomaly Detected';
-          const reasonMsg = result.reason === 'puzzle_misaligned'
-            ? 'Slightly off target — fit the piece into slot'
-            : (result.reason ? result.reason.replace(/_/g, ' ') : 'Verification Failed');
-          setStatus(reasonMsg, '#ef4444');
           shakeWidget();
-          // Give user a graceful moment to see the feedback before smooth reset
-          setTimeout(() => initChallenge('jigsaw'), 1100);
+
+          if (attemptCount >= MAX_ATTEMPTS) {
+            setTopGuide('warning', '⚠️ 3 galat attempts! Naya puzzle generate ho raha hai...');
+            setStatus('3 failed attempts. Loading fresh challenge...', '#ef4444');
+            setTimeout(() => {
+              attemptCount = 0;
+              initChallenge('jigsaw');
+            }, 1400);
+          } else {
+            const warningMsg = result.reason === 'puzzle_misaligned'
+              ? `⚠️ Slot match nahi hua! Outline ke andar fit karein (${attemptCount}/${MAX_ATTEMPTS})`
+              : `⚠️ Verification fail hui (${attemptCount}/${MAX_ATTEMPTS})`;
+            setTopGuide('warning', warningMsg);
+            const reasonMsg = result.reason === 'puzzle_misaligned'
+              ? 'Slightly off target — fit the piece into slot'
+              : (result.reason ? result.reason.replace(/_/g, ' ') : 'Verification Failed');
+            setStatus(reasonMsg, '#ef4444');
+            setTimeout(() => initChallenge('jigsaw'), 1200);
+          }
         }
       } catch {
         isSubmitting = false;
@@ -1008,7 +1170,11 @@
 
     knob.addEventListener('pointerup', finishDrag);
     knob.addEventListener('pointercancel', finishDrag);
-    refreshBtn.addEventListener('click', () => initChallenge('jigsaw'));
+    refreshBtn.addEventListener('click', () => {
+      attemptCount = 0;
+      updateAttemptBadge();
+      initChallenge('jigsaw');
+    });
 
     /* ------------------------------------------------------------------
        BOT ATTACK SIMULATOR INTERFACE (for the lab page)
