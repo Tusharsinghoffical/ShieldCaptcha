@@ -54,6 +54,20 @@ export async function proxyToBackend(req: NextRequest, endpoint: string) {
     const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
 
     if (endpoint === "/api/challenge") {
+      if (req.nextUrl.searchParams.get("simulate_lockout") === "true") {
+        const lock = serverlessEngine.simulateIpLockout(clientIp, 300);
+        return NextResponse.json({
+          error: "ip_temporarily_locked",
+          message: "Too many failed attempts. Access blocked for 5 minutes.",
+          retryAfterSec: lock.retryAfterSec,
+          lockedUntil: lock.lockedUntil
+        }, { status: 429 });
+      }
+      if (req.nextUrl.searchParams.get("reset_lockout") === "true") {
+        serverlessEngine.resetIpFails(clientIp);
+        return NextResponse.json({ success: true, message: "IP lockout reset successfully" }, { status: 200 });
+      }
+
       let mode = req.nextUrl.searchParams.get("mode") || "checkbox";
       if (req.method === "POST") {
         try {
@@ -61,8 +75,9 @@ export async function proxyToBackend(req: NextRequest, endpoint: string) {
           if (body?.mode) mode = body.mode;
         } catch {}
       }
-      const challenge = serverlessEngine.createChallenge(mode);
-      return NextResponse.json(challenge, { status: 200 });
+      const challenge: any = serverlessEngine.createChallenge(mode, clientIp);
+      const statusCode = challenge?.error === "ip_temporarily_locked" || challenge?.status === 429 ? 429 : 200;
+      return NextResponse.json(challenge, { status: statusCode });
     }
 
     if (endpoint === "/api/verify" && req.method === "POST") {
@@ -70,8 +85,9 @@ export async function proxyToBackend(req: NextRequest, endpoint: string) {
       try {
         body = await req.json();
       } catch {}
-      const result = serverlessEngine.verifySubmission(body.id, body.encrypted, clientIp, body);
-      return NextResponse.json(result, { status: 200 });
+      const result: any = serverlessEngine.verifySubmission(body.id, body.encrypted, clientIp, body);
+      const statusCode = result?.error === "ip_temporarily_locked" ? 429 : 200;
+      return NextResponse.json(result, { status: statusCode });
     }
 
     if ((endpoint === "/api/siteverify" || endpoint === "/api/v1/siteverify") && req.method === "POST") {

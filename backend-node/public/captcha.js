@@ -637,37 +637,108 @@
       <!-- Invisible Multi-Layer Honeypot Traps — bots fill these, humans don't -->
       <input class="sc-honeypot" name="user_verification_hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position: absolute; left: -9999px; opacity: 0; pointer-events: none; height: 0; width: 0;">
       <input class="sc-honeypot-sec" name="auth_token_bypass" tabindex="-1" autocomplete="off" aria-hidden="true" style="display: none !important; opacity: 0; position: absolute; pointer-events: none;">
+
+      <!-- Locked Out Rate Limit Overlay with Live Countdown -->
+      <div class="sc-lockout-overlay" style="
+        display: none;
+        position: absolute;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.96);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        text-align: center;
+        z-index: 99;
+        box-shadow: inset 0 0 25px rgba(239, 68, 68, 0.3), 0 10px 25px rgba(0,0,0,0.3);
+        box-sizing: border-box;
+      ">
+        <div style="width: 38px; height: 38px; border-radius: 50%; background: rgba(239, 68, 68, 0.18); border: 2px solid #ef4444; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; animation: sc-pulse 1.5s infinite;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </div>
+        <span style="color: #f87171; font-size: 13px; font-weight: 700; letter-spacing: 0.3px;">Rate Limit / Access Blocked</span>
+        <span class="sc-lockout-desc" style="color: #cbd5e1; font-size: 11px; margin-top: 4px; line-height: 1.4; max-width: 250px;">Too many failed attempts. Temporary security lockout active.</span>
+        <div style="margin-top: 10px; display: inline-flex; align-items: center; gap: 7px; padding: 4px 14px; border-radius: 20px; background: rgba(0,0,0,0.5); border: 1px solid rgba(239, 68, 68, 0.4);">
+          <span style="color: #94a3b8; font-size: 11px; font-weight: 500;">Unlocks in:</span>
+          <span class="sc-lockout-timer" style="color: #f87171; font-family: monospace; font-size: 14px; font-weight: 700;">05:00</span>
+        </div>
+      </div>
     `;
 
     container.appendChild(root);
 
-    const viewCheckbox = root.querySelector('.sc-view-checkbox');
-    const viewJigsaw   = root.querySelector('.sc-view-jigsaw');
-    const chkBtn       = root.querySelector('.sc-chk-btn');
-    const chkSpinner   = root.querySelector('.sc-chk-spinner');
-    const chkCheck     = root.querySelector('.sc-chk-check');
-    const chkLabel     = root.querySelector('.sc-chk-label');
-    const chkSub       = root.querySelector('.sc-chk-sub');
-    const bgImg        = root.querySelector('.sc-bg');
-    const pieceImg     = root.querySelector('.sc-piece');
-    const overlay      = root.querySelector('.sc-overlay');
-    const loadText     = root.querySelector('.sc-load-text');
-    const knob         = root.querySelector('.sc-knob');
-    const promptText   = root.querySelector('.sc-prompt-text');
-    const progressFill = root.querySelector('.sc-progress-fill');
-    const refreshBtn   = root.querySelector('.sc-refresh-btn');
-    const honeypot     = root.querySelector('.sc-honeypot');
-    const honeypotSec  = root.querySelector('.sc-honeypot-sec');
-    const badgeText    = root.querySelector('.sc-badge-text');
-    const badgeDot     = root.querySelector('.sc-dot');
-    const knobArrow    = root.querySelector('.sc-knob-arrow');
-    const knobCheck    = root.querySelector('.sc-knob-check');
-    const topGuide     = root.querySelector('.sc-top-guide');
-    const guideIcon    = root.querySelector('.sc-guide-icon');
-    const guideMsg     = root.querySelector('.sc-guide-msg');
-    const attemptBadge = root.querySelector('.sc-attempt-badge');
-    const attemptDot   = root.querySelector('.sc-attempt-dot');
-    const attemptText  = root.querySelector('.sc-attempt-text');
+    const viewCheckbox   = root.querySelector('.sc-view-checkbox');
+    const viewJigsaw     = root.querySelector('.sc-view-jigsaw');
+    const chkBtn         = root.querySelector('.sc-chk-btn');
+    const chkSpinner     = root.querySelector('.sc-chk-spinner');
+    const chkCheck       = root.querySelector('.sc-chk-check');
+    const chkLabel       = root.querySelector('.sc-chk-label');
+    const chkSub         = root.querySelector('.sc-chk-sub');
+    const bgImg          = root.querySelector('.sc-bg');
+    const pieceImg       = root.querySelector('.sc-piece');
+    const overlay        = root.querySelector('.sc-overlay');
+    const loadText       = root.querySelector('.sc-load-text');
+    const knob           = root.querySelector('.sc-knob');
+    const promptText     = root.querySelector('.sc-prompt-text');
+    const progressFill   = root.querySelector('.sc-progress-fill');
+    const refreshBtn     = root.querySelector('.sc-refresh-btn');
+    const honeypot       = root.querySelector('.sc-honeypot');
+    const honeypotSec    = root.querySelector('.sc-honeypot-sec');
+    const badgeText      = root.querySelector('.sc-badge-text');
+    const badgeDot       = root.querySelector('.sc-dot');
+    const knobArrow      = root.querySelector('.sc-knob-arrow');
+    const knobCheck      = root.querySelector('.sc-knob-check');
+    const topGuide       = root.querySelector('.sc-top-guide');
+    const guideIcon      = root.querySelector('.sc-guide-icon');
+    const guideMsg       = root.querySelector('.sc-guide-msg');
+    const attemptBadge   = root.querySelector('.sc-attempt-badge');
+    const attemptDot     = root.querySelector('.sc-attempt-dot');
+    const attemptText    = root.querySelector('.sc-attempt-text');
+    const lockoutOverlay = root.querySelector('.sc-lockout-overlay');
+    const lockoutDesc    = root.querySelector('.sc-lockout-desc');
+    const lockoutTimer   = root.querySelector('.sc-lockout-timer');
+
+    let lockoutInterval  = null;
+
+    function showLockout(seconds = 300, message = '') {
+      if (lockoutInterval) clearInterval(lockoutInterval);
+      if (lockoutOverlay) {
+        lockoutOverlay.style.display = 'flex';
+        if (message && lockoutDesc) lockoutDesc.textContent = message;
+      }
+      let remaining = Math.max(1, Math.round(seconds));
+      const formatTime = (s) => {
+        const m = Math.floor(s / 60).toString().padStart(2, '0');
+        const sec = (s % 60).toString().padStart(2, '0');
+        return `${m}:${sec}`;
+      };
+      if (lockoutTimer) lockoutTimer.textContent = formatTime(remaining);
+
+      lockoutInterval = setInterval(() => {
+        remaining--;
+        if (lockoutTimer) lockoutTimer.textContent = formatTime(Math.max(0, remaining));
+        if (remaining <= 0) {
+          clearInterval(lockoutInterval);
+          lockoutInterval = null;
+          if (lockoutOverlay) lockoutOverlay.style.display = 'none';
+          attemptCount = 0;
+          initChallenge();
+        }
+      }, 1000);
+    }
+
+    function hideLockout() {
+      if (lockoutInterval) {
+        clearInterval(lockoutInterval);
+        lockoutInterval = null;
+      }
+      if (lockoutOverlay) lockoutOverlay.style.display = 'none';
+    }
 
     let attemptCount = 0;
     const MAX_ATTEMPTS = 3;
@@ -846,6 +917,10 @@
           body: JSON.stringify({ mode: 'jigsaw', failCount })
         });
         const data = await res.json();
+        if (data.error === 'ip_temporarily_locked' || res.status === 429) {
+          showLockout(data.retryAfterSec || 300, data.message);
+          return;
+        }
         if (data.error) {
           overlay.style.opacity = '1';
           loadText.textContent = data.error;
@@ -904,6 +979,13 @@
           body: JSON.stringify({ mode: 'checkbox', failCount })
         });
         const chal = await chalRes.json();
+        if (chal.error === 'ip_temporarily_locked' || chalRes.status === 429) {
+          isSubmitting = false;
+          chkSpinner.style.display = 'none';
+          chkBtn.disabled = false;
+          showLockout(chal.retryAfterSec || 300, chal.message);
+          return;
+        }
         if (chal.error || !chal.prefix) {
           isSubmitting = false;
           chkSpinner.style.display = 'none';
@@ -975,6 +1057,9 @@
               setTopGuide('warning', '⚠️ Step-up check: Piece ko slot me match karein');
             });
           }, 450);
+        if (result.error === 'ip_temporarily_locked' || verifyRes.status === 429) {
+          chkSpinner.style.display = 'none';
+          showLockout(result.retryAfterSec || 300, result.message);
           return;
         }
 
@@ -1116,6 +1201,11 @@
         }
 
         isSubmitting = false;
+
+        if (result.error === 'ip_temporarily_locked' || verifyRes.status === 429) {
+          showLockout(result.retryAfterSec || 300, result.message);
+          return;
+        }
 
         if (result.ok) {
           isSolved = true;
@@ -1268,6 +1358,7 @@
 
     function switchMode(newMode) {
       preferredMode = newMode;
+      hideLockout();
       initChallenge(newMode);
     }
 
@@ -1275,10 +1366,17 @@
     initChallenge();
 
     return {
-      reset: () => initChallenge(),
+      reset: () => { hideLockout(); initChallenge(); },
       switchMode,
+      triggerLockout: (sec) => showLockout(sec || 300),
+      resetLockout: () => {
+        hideLockout();
+        fetch(`${api}/api/challenge?reset_lockout=true`).catch(() => {});
+        initChallenge();
+      },
       simulateBot,
       destroy() {
+        if (lockoutInterval) clearInterval(lockoutInterval);
         window.removeEventListener('pointermove', handleAmbient);
         sensor.destroy();
       }

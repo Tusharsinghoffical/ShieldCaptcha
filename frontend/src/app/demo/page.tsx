@@ -5,18 +5,18 @@ import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { CaptchaWidget } from "@/components/CaptchaWidget";
-import { 
-  ArrowLeft, 
-  ArrowRight, 
-  CheckCircle2, 
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
   Check,
-  ShieldCheck, 
-  Lock, 
-  Mail, 
-  Sliders, 
-  RotateCcw, 
-  Loader2, 
-  ShieldAlert 
+  ShieldCheck,
+  Lock,
+  Mail,
+  Sliders,
+  RotateCcw,
+  Loader2,
+  ShieldAlert
 } from "lucide-react";
 
 type AuthMode = "checkbox" | "jigsaw" | "adaptive";
@@ -78,7 +78,7 @@ export default function DemoPage() {
 
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-md bg-white rounded-2xl p-7 border border-slate-200 shadow-md relative overflow-hidden">
-          
+
           {/* Header with Official Logo */}
           <div className="flex items-center gap-3.5 mb-6 border-b border-slate-200 pb-4">
             <img
@@ -106,29 +106,26 @@ export default function DemoPage() {
               <React.Fragment key={s.num}>
                 <div className="flex flex-col items-center gap-1.5">
                   <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                      step > s.num
+                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${step > s.num
                         ? "bg-emerald-600 text-white shadow-sm"
                         : step === s.num
-                        ? "bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-200"
-                        : "bg-slate-100 text-slate-500 border border-slate-200"
-                    }`}
+                          ? "bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-200"
+                          : "bg-slate-100 text-slate-500 border border-slate-200"
+                      }`}
                   >
                     {step > s.num ? <Check className="w-3 h-3" /> : s.num}
                   </div>
                   <span
-                    className={`text-[10px] font-semibold tracking-wide ${
-                      step === s.num ? "text-indigo-700" : "text-slate-500"
-                    }`}
+                    className={`text-[10px] font-semibold tracking-wide ${step === s.num ? "text-indigo-700" : "text-slate-500"
+                      }`}
                   >
                     {s.title}
                   </span>
                 </div>
                 {idx < 2 && (
                   <div
-                    className={`flex-1 h-[2px] mx-2 transition-all ${
-                      step > idx + 1 ? "bg-emerald-500" : "bg-slate-200"
-                    }`}
+                    className={`flex-1 h-[2px] mx-2 transition-all ${step > idx + 1 ? "bg-emerald-500" : "bg-slate-200"
+                      }`}
                   />
                 )}
               </React.Fragment>
@@ -169,11 +166,10 @@ export default function DemoPage() {
                       key={m}
                       type="button"
                       onClick={() => setActiveMode(m)}
-                      className={`py-2 px-1 rounded-lg transition-all text-[11px] font-semibold text-center ${
-                        activeMode === m
+                      className={`py-2 px-1 rounded-lg transition-all text-[11px] font-semibold text-center ${activeMode === m
                           ? "bg-white text-indigo-700 shadow-sm border border-slate-200/80 font-bold"
                           : "text-slate-600 hover:text-slate-900"
-                      }`}
+                        }`}
                     >
                       {m === "checkbox" ? "1-Click" : m === "jigsaw" ? "Jigsaw Slider" : "Adaptive Step-Up"}
                     </button>
@@ -217,7 +213,7 @@ export default function DemoPage() {
                 <span className="text-xs font-semibold text-slate-700 mb-3 block">
                   Complete the Security Challenge ({activeMode === "checkbox" ? "1-Click PoW" : activeMode === "jigsaw" ? "Jigsaw Slider" : "Auto Step-Up"}):
                 </span>
-                
+
                 <CaptchaWidget
                   mode={activeMode}
                   onToken={(t) => {
@@ -226,7 +222,7 @@ export default function DemoPage() {
                   onReset={() => {
                     setVerifiedToken("");
                   }}
-                  onTrajectory={() => {}}
+                  onTrajectory={() => { }}
                 />
               </div>
 

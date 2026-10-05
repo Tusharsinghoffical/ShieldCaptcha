@@ -16,6 +16,77 @@ const BASE_POW_BITS = 14;        // 14 bits (~16k hashes, ~30ms in browser worke
 const challenges = new Map<string, any>();
 const usedTokens = new Map<string, number>();
 
+// IP Rate Limiting & Fail Lockout System (5-minute and 10-minute temporary ban)
+const IP_LOCK_THRESHOLD = 5;          // 5 failed attempts = 5 min lock
+const IP_LOCK_DURATION_5MIN = 300000; // 5 minutes in ms
+const IP_LOCK_DURATION_10MIN = 600000; // 10 minutes in ms
+
+interface IpFailRecord {
+  count: number;
+  lockedUntil: number;
+}
+
+const ipFails = new Map<string, IpFailRecord>();
+
+function normalizeIp(ip: string): string {
+  if (!ip) return "127.0.0.1";
+  let s = String(ip).trim();
+  if (s.startsWith("::ffff:")) s = s.replace("::ffff:", "");
+  if (s === "::1") return "127.0.0.1";
+  return s;
+}
+
+export function isIpLocked(rawIp: string): { locked: boolean; retryAfterSec: number; lockedUntil: number } {
+  const ip = normalizeIp(rawIp);
+  const rec = ipFails.get(ip);
+  if (!rec) return { locked: false, retryAfterSec: 0, lockedUntil: 0 };
+  const now = Date.now();
+  if (rec.count >= IP_LOCK_THRESHOLD && now < rec.lockedUntil) {
+    const retryAfterSec = Math.max(1, Math.ceil((rec.lockedUntil - now) / 1000));
+    return { locked: true, retryAfterSec, lockedUntil: rec.lockedUntil };
+  }
+  if (now >= rec.lockedUntil && rec.lockedUntil > 0) {
+    ipFails.delete(ip);
+    return { locked: false, retryAfterSec: 0, lockedUntil: 0 };
+  }
+  return { locked: false, retryAfterSec: 0, lockedUntil: 0 };
+}
+
+export function recordIpFail(rawIp: string): { locked: boolean; failCount: number; retryAfterSec: number } {
+  const ip = normalizeIp(rawIp);
+  const now = Date.now();
+  let rec = ipFails.get(ip);
+  if (!rec) {
+    rec = { count: 0, lockedUntil: 0 };
+    ipFails.set(ip, rec);
+  }
+  rec.count++;
+  if (rec.count >= 8) {
+    rec.lockedUntil = now + IP_LOCK_DURATION_10MIN; // 10 minutes
+    return { locked: true, failCount: rec.count, retryAfterSec: 600 };
+  }
+  if (rec.count >= IP_LOCK_THRESHOLD) {
+    rec.lockedUntil = now + IP_LOCK_DURATION_5MIN; // 5 minutes
+    return { locked: true, failCount: rec.count, retryAfterSec: 300 };
+  }
+  return { locked: false, failCount: rec.count, retryAfterSec: 0 };
+}
+
+export function resetIpFails(rawIp: string) {
+  const ip = normalizeIp(rawIp);
+  ipFails.delete(ip);
+}
+
+export function simulateIpLockout(rawIp: string, durationSec = 300) {
+  const ip = normalizeIp(rawIp);
+  const now = Date.now();
+  ipFails.set(ip, {
+    count: 5,
+    lockedUntil: now + durationSec * 1000
+  });
+  return { locked: true, retryAfterSec: durationSec, lockedUntil: now + durationSec * 1000 };
+}
+
 const metrics = {
   totalChallenges: 42,
   verifiedHumans: 38,
@@ -352,6 +423,11 @@ function auditClientEnvironment(env: any) {
 }
 
 export const serverlessEngine = {
+  isIpLocked,
+  recordIpFail,
+  resetIpFails,
+  simulateIpLockout,
+
   getStats() {
     return {
       ...metrics,
@@ -362,7 +438,18 @@ export const serverlessEngine = {
     };
   },
 
-  createChallenge(mode: string = "checkbox") {
+  createChallenge(mode: string = "checkbox", clientIp: string = "127.0.0.1") {
+    const lock = isIpLocked(clientIp);
+    if (lock.locked) {
+      return {
+        error: "ip_temporarily_locked",
+        message: `Too many failed attempts. Access blocked for ${Math.ceil(lock.retryAfterSec / 60)} minutes.`,
+        retryAfterSec: lock.retryAfterSec,
+        lockedUntil: lock.lockedUntil,
+        status: 429
+      };
+    }
+
     metrics.totalChallenges++;
     const cid = crypto.randomBytes(16).toString("hex");
     const sessionSalt = crypto.randomBytes(16).toString("hex");
@@ -463,6 +550,35 @@ export const serverlessEngine = {
   },
 
   verifySubmission(id: string, encryptedHex?: string, clientIp: string = "127.0.0.1", rawBody: any = {}) {
+    const lock = isIpLocked(clientIp);
+    if (lock.locked) {
+      return {
+        ok: false,
+        error: "ip_temporarily_locked",
+        reason: "ip_temporarily_locked",
+        message: `Too many failed attempts. Access blocked for ${Math.ceil(lock.retryAfterSec / 60)} minutes.`,
+        retryAfterSec: lock.retryAfterSec,
+        lockedUntil: lock.lockedUntil
+      };
+    }
+
+    const fail = (reason: string, details?: any) => {
+      metrics.blockedBots++;
+      const lockRes = recordIpFail(clientIp);
+      if (lockRes.locked) {
+        return {
+          ok: false,
+          error: "ip_temporarily_locked",
+          reason: "ip_temporarily_locked",
+          message: `Too many failed attempts. Access blocked for ${Math.ceil(lockRes.retryAfterSec / 60)} minutes.`,
+          retryAfterSec: lockRes.retryAfterSec,
+          lockedUntil: Date.now() + lockRes.retryAfterSec * 1000,
+          attemptsUsed: lockRes.failCount
+        };
+      }
+      return { ok: false, reason, details, attemptsUsed: lockRes.failCount };
+    };
+
     let challenge = challenges.get(id);
 
     // Stateless fallback: recover challenge claims from signed token across Vercel serverless containers
@@ -492,21 +608,18 @@ export const serverlessEngine = {
 
     // 1. Honeypot Trap
     if (payload.honeypot && String(payload.honeypot).trim() !== "") {
-      metrics.blockedBots++;
-      return { ok: false, reason: "honeypot_triggered" };
+      return fail("honeypot_triggered");
     }
 
     // 2. Synthetic Event Rejection
     if (payload.trustedEvent === false) {
-      metrics.blockedBots++;
-      return { ok: false, reason: "synthetic_event_dispatched" };
+      return fail("synthetic_event_dispatched");
     }
 
     // 3. Client Environment & Automation Audit
     const envAudit = auditClientEnvironment(payload.env);
     if (envAudit.penalty >= 75) {
-      metrics.blockedBots++;
-      return { ok: false, reason: "automated_environment_rejected", flags: envAudit.flags };
+      return fail("automated_environment_rejected", { flags: envAudit.flags });
     }
 
     // 4. Proof-of-Work Verification
@@ -516,8 +629,7 @@ export const serverlessEngine = {
       const powDigest = crypto.createHash("sha256").update(`${prefix}:${payload.nonce}`).digest();
       const solvedBits = countLeadingZeroBits(powDigest);
       if (solvedBits < bitsRequired - 1) { // 1-bit tolerance for hash jitter
-        metrics.blockedBots++;
-        return { ok: false, reason: "insufficient_pow_difficulty" };
+        return fail("insufficient_pow_difficulty");
       }
     }
 
@@ -576,6 +688,7 @@ export const serverlessEngine = {
 
       // Checkbox PASSED!
       metrics.verifiedHumans++;
+      resetIpFails(clientIp);
       if (id) challenges.delete(id);
 
       const passScore = Math.max(90, 98 - envAudit.penalty);
@@ -603,24 +716,19 @@ export const serverlessEngine = {
     if (typeof challenge.targetX === "number") {
       const receivedX = typeof payload.x === "number" ? payload.x : -999;
       if (Math.abs(receivedX - challenge.targetX) > TARGET_TOLERANCE) {
-        metrics.blockedBots++;
-        return {
-          ok: false,
-          reason: "puzzle_misaligned",
-          details: { receivedX: Math.round(receivedX), targetX: challenge.targetX }
-        };
+        return fail("puzzle_misaligned", { receivedX: Math.round(receivedX), targetX: challenge.targetX });
       }
     }
 
     // Kinematics trajectory check
     const kinematics = analyzeKinematicTrajectory(payload.trail, payload.x, payload.dragElapsedMs || 500);
     if (kinematics.score === 0) {
-      metrics.blockedBots++;
-      return { ok: false, reason: `kinematic_violation:${kinematics.reason}` };
+      return fail(`kinematic_violation:${kinematics.reason}`);
     }
 
     // Jigsaw PASSED!
     metrics.verifiedHumans++;
+    resetIpFails(clientIp);
     if (id) challenges.delete(id);
 
     const finalScore = Math.max(88, Math.min(99, kinematics.score - envAudit.penalty));
