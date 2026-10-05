@@ -34,9 +34,9 @@ export default function ContactPage() {
             {
               Icon: Bug,
               title: "Bug Reports",
-              desc: "Found a bug or unexpected behavior? Open an issue on GitHub with steps to reproduce.",
-              cta: "Open GitHub Issue",
-              href: "https://github.com/Tusharsinghoffical/ShieldCaptcha/issues/new",
+              desc: "Found a bug or unexpected behavior? Send detailed steps to reproduce to our engineering team.",
+              cta: "support@shieldcaptcha.dev",
+              href: "mailto:support@shieldcaptcha.dev",
             },
             {
               Icon: ShieldCheck,
@@ -48,7 +48,7 @@ export default function ContactPage() {
             {
               Icon: BookOpen,
               title: "Integration Help",
-              desc: "Having trouble integrating ShieldCaptcha? Check the docs first, then ask on GitHub Discussions.",
+              desc: "Having trouble integrating ShieldCaptcha? Check the documentation guides or reach out for technical assistance.",
               cta: "Read the Docs",
               href: "/docs",
             },
@@ -69,9 +69,9 @@ export default function ContactPage() {
             {
               Icon: Lightbulb,
               title: "Feature Requests",
-              desc: "Have an idea to improve ShieldCaptcha? Start a Discussion on GitHub to get community feedback.",
-              cta: "Start a Discussion",
-              href: "https://github.com/Tusharsinghoffical/ShieldCaptcha/discussions",
+              desc: "Have an idea to improve ShieldCaptcha? Submit your proposals and feedback directly to our team.",
+              cta: "feedback@shieldcaptcha.dev",
+              href: "mailto:feedback@shieldcaptcha.dev",
             },
           ].map(({ Icon, title, desc, cta, href }) => (
             <a
