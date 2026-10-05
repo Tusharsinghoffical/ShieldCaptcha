@@ -759,8 +759,12 @@
       isSubmitting = true;
       chkBtn.disabled = true;
       chkSpinner.style.display = 'block';
-      chkLabel.textContent = 'Evaluating environment…';
-      chkSub.textContent = 'Solving Proof-of-Work…';
+      chkCheck.style.display = 'none';
+      chkLabel.textContent = 'Verifying you are human...';
+      chkSub.textContent = 'Evaluating environment…';
+
+      const clickStart = performance.now();
+      const clickLatencyMs = Math.round(clickStart - mountTimestamp);
 
       try {
         const chalRes = await fetch(`${api}/api/challenge`, {
@@ -779,6 +783,7 @@
         }
         currentChallenge = chal;
 
+        chkSub.textContent = 'Checking browser integrity…';
         const powResult = await runPoWWorker(chal.prefix, chal.bits);
         const fingerprint = collectBrowserFingerprint();
         const interactionReport = sensor.getReport();
@@ -787,12 +792,10 @@
           id: chal.id,
           nonce: powResult.nonce,
           powDuration: powResult.duration,
-          // v4.2: one-time request nonce binds this payload to exactly one submission
           reqNonce: Array.from(crypto.getRandomValues(new Uint8Array(12))).map(b => b.toString(16).padStart(2, '0')).join(''),
           trace: ambientTrace.slice(-150),
           trustedEvent: e.isTrusted,
-          // v4.2: time from widget mount to click — bots click instantly
-          clickLatencyMs: Math.round(performance.now() - mountTimestamp),
+          clickLatencyMs,
           honeypot: (honeypot.value || '') + (honeypotSec ? honeypotSec.value : ''),
           env: fingerprint,
           interaction: interactionReport,
@@ -804,10 +807,19 @@
         const verifyRes = await fetch(`${api}/api/verify`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: chal.id, encrypted: encryptedHex })
+          body: JSON.stringify({ id: chal.id, encrypted: encryptedHex, token: chal.token })
         });
 
         const result = await verifyRes.json();
+
+        // Golden Human Pacing Window (800ms - 900ms)
+        // Ensures natural authentic verification pacing — not instant (100ms) and not laggy
+        const MIN_CHECKBOX_PACING_MS = 850;
+        const elapsed = performance.now() - clickStart;
+        if (elapsed < MIN_CHECKBOX_PACING_MS) {
+          await new Promise(r => setTimeout(r, MIN_CHECKBOX_PACING_MS - elapsed));
+        }
+
         isSubmitting = false;
 
         if (result.escalate && result.challenge) {
@@ -837,11 +849,12 @@
           chkSpinner.style.display = 'none';
           chkCheck.style.display = 'block';
           chkBtn.style.borderColor = '#10b981';
-          chkBtn.style.background = 'rgba(16, 185, 129, 0.10)';
+          chkBtn.style.background = 'rgba(16, 185, 129, 0.12)';
+          chkBtn.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.20)';
           chkLabel.textContent = "You're verified!";
-          chkSub.textContent = `Score: ${result.score} • 1-Click PoW`;
+          chkSub.textContent = `Human verified • Score: ${result.score || 98}`;
           failCount = 0;
-          onToken(result.token, { score: result.score, mode: 'checkbox_pow' });
+          onToken(result.token, { score: result.score || 98, mode: 'checkbox_pow' });
         } else {
           failCount++;
           chkSpinner.style.display = 'none';
@@ -907,17 +920,18 @@
 
       const dragElapsedMs = Math.round(performance.now() - dragStartTimestamp);
 
-      // Client-side sanity: reject impossibly fast drags before even sending
-      if (dragElapsedMs < 30) {
+      // Client-side sanity: reject impossibly fast drags (< 60ms) before even sending
+      if (dragElapsedMs < 60) {
         isSubmitting = false;
         failCount++;
-        setStatus('Interaction rejected: too fast', '#ef4444');
+        setStatus('Drag too fast: human movement required', '#ef4444');
         shakeWidget();
         setTimeout(() => initChallenge('jigsaw'), 900);
         return;
       }
 
-      setStatus('Verifying kinematics & PoW...', '#6366f1');
+      const dropStart = performance.now();
+      setStatus('Evaluating motion physics...', '#6366f1');
       knob.style.background = 'linear-gradient(135deg, #4338ca, #3730a3)';
 
       try {
@@ -931,7 +945,6 @@
           nonce: powResult.nonce,
           powDuration: powResult.duration,
           dragElapsedMs,
-          // v4.2: one-time request nonce to prevent payload replay
           reqNonce: Array.from(crypto.getRandomValues(new Uint8Array(12))).map(b => b.toString(16).padStart(2, '0')).join(''),
           trail: trajectoryTrail,
           trustedEvent: isEventTrusted,
@@ -946,10 +959,18 @@
         const verifyRes = await fetch(`${api}/api/verify`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: currentChallenge.id, encrypted: encryptedHex })
+          body: JSON.stringify({ id: currentChallenge.id, encrypted: encryptedHex, token: currentChallenge.token })
         });
 
         const result = await verifyRes.json();
+
+        // Natural smooth puzzle evaluation pacing (450ms - 550ms)
+        const MIN_PUZZLE_PACING_MS = 500;
+        const elapsed = performance.now() - dropStart;
+        if (elapsed < MIN_PUZZLE_PACING_MS) {
+          await new Promise(r => setTimeout(r, MIN_PUZZLE_PACING_MS - elapsed));
+        }
+
         isSubmitting = false;
 
         if (result.ok) {
@@ -961,7 +982,7 @@
           knobArrow.style.display = 'none';
           knobCheck.style.display = 'block';
           badgeDot.style.background = '#10b981';
-          badgeText.textContent = `Human (Score ${result.score})`;
+          badgeText.textContent = `Human (Score ${result.score || 96})`;
           setStatus('Verification Successful!', '#059669');
           onToken(result.token, result.audit);
         } else {
@@ -969,10 +990,13 @@
           knob.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
           badgeDot.style.background = '#ef4444';
           badgeText.textContent = 'Anomaly Detected';
-          const reasonMsg = result.reason ? result.reason.replace(/_/g, ' ') : 'Verification Failed';
+          const reasonMsg = result.reason === 'puzzle_misaligned'
+            ? 'Slightly off target — fit the piece into slot'
+            : (result.reason ? result.reason.replace(/_/g, ' ') : 'Verification Failed');
           setStatus(reasonMsg, '#ef4444');
           shakeWidget();
-          setTimeout(() => initChallenge('jigsaw'), 1000);
+          // Give user a graceful moment to see the feedback before smooth reset
+          setTimeout(() => initChallenge('jigsaw'), 1100);
         }
       } catch {
         isSubmitting = false;

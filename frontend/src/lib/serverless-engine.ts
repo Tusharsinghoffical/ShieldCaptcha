@@ -266,6 +266,116 @@ function makeJigsawPuzzle() {
   };
 }
 
+const TARGET_TOLERANCE = 18; // +/- 18px comfortable human tolerance
+
+function analyzeKinematicTrajectory(trail: any[], endX: number, totalElapsed: number) {
+  if (!Array.isArray(trail) || trail.length < 2 || trail.length > 800) {
+    return { score: 70, reason: "fast_drag", audit: { velocity: "quick_flick" } };
+  }
+
+  for (const pt of trail) {
+    if (!Array.isArray(pt) || pt.length < 3 || pt.some(v => typeof v !== "number" || !Number.isFinite(v))) {
+      return { score: 0, reason: "corrupted_point_data" };
+    }
+  }
+
+  const tStart = trail[0][2];
+  const tEnd = trail[trail.length - 1][2];
+  const dragDuration = tEnd - tStart;
+
+  // Real human drag duration: 60ms to 45000ms
+  if (dragDuration < 60 || dragDuration > 45000) {
+    return { score: 0, reason: "unnatural_timing_profile", details: { dragDuration, totalElapsed } };
+  }
+
+  if (trail[0][0] > 40) {
+    return { score: 0, reason: "origin_displacement_anomaly" };
+  }
+
+  if (trail.length < 3 && Math.abs(endX) > 40) {
+    return { score: 0, reason: "synthetic_instant_jump" };
+  }
+
+  const velocities: number[] = [];
+  let totalPath = 0;
+  for (let i = 1; i < trail.length; i++) {
+    const dt = trail[i][2] - trail[i - 1][2];
+    if (dt <= 0) continue;
+    const dx = trail[i][0] - trail[i - 1][0];
+    const dy = trail[i][1] - trail[i - 1][1];
+    const dist = Math.hypot(dx, dy);
+    totalPath += dist;
+
+    // Detect extreme teleports (> 60% of canvas in < 18ms)
+    if (dist > W * 0.6 && dt < 18) {
+      return { score: 0, reason: "teleportation_jump_detected" };
+    }
+    velocities.push(dist / dt);
+  }
+
+  const startPt = trail[0];
+  const endPt = trail[trail.length - 1];
+  const directDist = Math.hypot(endPt[0] - startPt[0], endPt[1] - startPt[1]);
+  const yCoordinates = trail.map(pt => pt[1]);
+  const mean = (arr: number[]) => arr.reduce((acc, v) => acc + v, 0) / (arr.length || 1);
+  const stdDev = (arr: number[], m: number) => Math.sqrt(arr.reduce((acc, v) => acc + Math.pow(v - m, 2), 0) / (arr.length || 1));
+  const uniqueYCount = new Set(yCoordinates).size;
+
+  // Strict Robotic Linearity: long drag with 100% constant zero-variation straight line
+  if (directDist > 60 && uniqueYCount === 1 && totalPath <= directDist * 1.00001) {
+    return { score: 0, reason: "robotic_linear_drag" };
+  }
+
+  const meanV = mean(velocities);
+  const vStd = stdDev(velocities, meanV);
+  const cvVelocity = vStd / (meanV || 0.001);
+
+  // Machine constant speed without biological acceleration/deceleration
+  if (trail.length >= 8 && cvVelocity < 0.025) {
+    return { score: 0, reason: "robotic_constant_velocity" };
+  }
+
+  // Generous base organic credit for real human interaction
+  let score = 88;
+  if (cvVelocity > 0.04) score += 5;
+  if (uniqueYCount >= 2) score += 4;
+
+  return {
+    score: Math.min(99, score),
+    reason: "valid_human_kinematics",
+    metrics: { dragDuration, cvVelocity: Number(cvVelocity.toFixed(3)), pathLength: Number(totalPath.toFixed(1)) }
+  };
+}
+
+function auditClientEnvironment(env: any) {
+  let penalty = 0;
+  const flags: string[] = [];
+  const e = env || {};
+
+  if (e.webdriver === true || e.isHeadless === true || e.hasAutomationGlobals === true) {
+    penalty += 80;
+    flags.push("automation_tool_detected");
+  }
+  if (e.webdriverTampered === true) {
+    penalty += 40;
+    flags.push("webdriver_descriptor_tampered");
+  }
+  if (e.outerZero === true) {
+    penalty += 50;
+    flags.push("headless_zero_viewport");
+  }
+  if (e.tamperedNatives === true) {
+    penalty += 35;
+    flags.push("tampered_native_functions");
+  }
+  if (e.protoTampered === true) {
+    penalty += 30;
+    flags.push("prototype_pollution_tamper");
+  }
+
+  return { penalty, flags };
+}
+
 export const serverlessEngine = {
   getStats() {
     return {
@@ -388,7 +498,6 @@ export const serverlessEngine = {
     }
 
     if (!challenge) {
-      // Graceful fallback for demo experience
       challenge = {
         id,
         powBits: BASE_POW_BITS,
@@ -405,35 +514,145 @@ export const serverlessEngine = {
       if (dec) payload = dec;
     }
 
-    // Honeypot check
+    // 1. Honeypot Trap
     if (payload.honeypot && String(payload.honeypot).trim() !== "") {
       metrics.blockedBots++;
       return { ok: false, reason: "honeypot_triggered" };
     }
 
-    // Proof-of-Work leading zeros check
+    // 2. Synthetic Event Rejection
+    if (payload.trustedEvent === false) {
+      metrics.blockedBots++;
+      return { ok: false, reason: "synthetic_event_dispatched" };
+    }
+
+    // 3. Client Environment & Automation Audit
+    const envAudit = auditClientEnvironment(payload.env);
+    if (envAudit.penalty >= 60) {
+      metrics.blockedBots++;
+      return { ok: false, reason: "automated_environment_rejected", flags: envAudit.flags };
+    }
+
+    // 4. Proof-of-Work Verification
     if (payload.nonce !== undefined && payload.nonce !== null && challenge.powPrefix && challenge.powPrefix !== "fallback") {
       const prefix = challenge.powPrefix || challenge.prefix;
       const bitsRequired = challenge.powBits || challenge.bits || BASE_POW_BITS;
       const powDigest = crypto.createHash("sha256").update(`${prefix}:${payload.nonce}`).digest();
       const solvedBits = countLeadingZeroBits(powDigest);
-      if (solvedBits < bitsRequired - 1) { // 1-bit tolerance for jitter
+      if (solvedBits < bitsRequired - 1) { // 1-bit tolerance for hash jitter
         metrics.blockedBots++;
         return { ok: false, reason: "insufficient_pow_difficulty" };
       }
     }
 
-    // Verification PASSED!
+    // 5. Checkbox Mode Specifics
+    const currentMode = challenge.mode || payload.mode || "checkbox";
+    if (currentMode === "checkbox") {
+      // If suspicious instant click (bots click in < 60ms of mount) or slight env penalty, escalate to jigsaw
+      if ((typeof payload.clickLatencyMs === "number" && payload.clickLatencyMs < 60) || envAudit.penalty > 25) {
+        metrics.escalatedToPuzzle++;
+        const puzzle = makeJigsawPuzzle();
+        const stepUpCid = crypto.randomBytes(16).toString("hex");
+        const stepUpSalt = crypto.randomBytes(16).toString("hex");
+        const stepUpToken = createSignedToken({
+          cid: stepUpCid,
+          powPrefix: crypto.randomBytes(10).toString("hex"),
+          powBits: BASE_POW_BITS + 2,
+          sessionSalt: stepUpSalt,
+          mode: "jigsaw",
+          targetX: puzzle.targetX,
+          targetY: puzzle.targetY,
+          exp: Date.now() + CHALLENGE_TTL,
+          aud: SITE_KEY
+        });
+
+        challenges.set(stepUpCid, {
+          id: stepUpCid,
+          mode: "jigsaw",
+          powPrefix: crypto.randomBytes(10).toString("hex"),
+          powBits: BASE_POW_BITS + 2,
+          sessionSalt: stepUpSalt,
+          targetX: puzzle.targetX,
+          targetY: puzzle.targetY,
+          token: stepUpToken,
+          createdAt: Date.now()
+        });
+
+        return {
+          ok: false,
+          escalate: true,
+          reason: "step_up_challenge_required",
+          challenge: {
+            id: stepUpCid,
+            mode: "jigsaw",
+            salt: stepUpSalt,
+            bits: BASE_POW_BITS + 2,
+            prefix: challenges.get(stepUpCid).powPrefix,
+            bg: puzzle.bgDataUrl,
+            piece: puzzle.pieceDataUrl,
+            pieceY: puzzle.targetY,
+            token: stepUpToken
+          }
+        };
+      }
+
+      // Checkbox PASSED!
+      metrics.verifiedHumans++;
+      if (id) challenges.delete(id);
+
+      const passScore = Math.max(90, 98 - envAudit.penalty);
+      const passToken = createSignedToken({
+        jti: crypto.randomBytes(16).toString("hex"),
+        cid: id,
+        sub: sha256(clientIp).slice(0, 16),
+        aud: SITE_KEY,
+        score: passScore,
+        mode: "checkbox_pow",
+        iat: Date.now(),
+        exp: Date.now() + PASS_TTL
+      });
+
+      return {
+        ok: true,
+        token: passToken,
+        score: passScore,
+        mode: "checkbox_pow",
+        authorized: true
+      };
+    }
+
+    // 6. Jigsaw Mode Specifics: Target Alignment & Kinematics
+    if (typeof challenge.targetX === "number") {
+      const receivedX = typeof payload.x === "number" ? payload.x : -999;
+      if (Math.abs(receivedX - challenge.targetX) > TARGET_TOLERANCE) {
+        metrics.blockedBots++;
+        return {
+          ok: false,
+          reason: "puzzle_misaligned",
+          details: { receivedX: Math.round(receivedX), targetX: challenge.targetX }
+        };
+      }
+    }
+
+    // Kinematics trajectory check
+    const kinematics = analyzeKinematicTrajectory(payload.trail, payload.x, payload.dragElapsedMs || 500);
+    if (kinematics.score === 0) {
+      metrics.blockedBots++;
+      return { ok: false, reason: `kinematic_violation:${kinematics.reason}` };
+    }
+
+    // Jigsaw PASSED!
     metrics.verifiedHumans++;
     if (id) challenges.delete(id);
 
+    const finalScore = Math.max(88, Math.min(99, kinematics.score - envAudit.penalty));
     const passToken = createSignedToken({
       jti: crypto.randomBytes(16).toString("hex"),
       cid: id,
       sub: sha256(clientIp).slice(0, 16),
       aud: SITE_KEY,
-      score: 95,
-      mode: challenge.mode || "checkbox",
+      score: finalScore,
+      mode: "jigsaw_kinematics",
       iat: Date.now(),
       exp: Date.now() + PASS_TTL
     });
@@ -441,8 +660,8 @@ export const serverlessEngine = {
     return {
       ok: true,
       token: passToken,
-      score: 95,
-      mode: challenge.mode || "checkbox",
+      score: finalScore,
+      mode: "jigsaw_kinematics",
       authorized: true
     };
   },

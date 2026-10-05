@@ -180,7 +180,7 @@ export default function DemoPage() {
                   ))}
                 </div>
                 <div className="text-[11px] text-slate-500 mt-1.5 px-1">
-                  {activeMode === "checkbox" && "Fast Proof-of-Work Turnstile verification (under 20ms)."}
+                  {activeMode === "checkbox" && "Enterprise Proof-of-Work verification with natural human pacing (~850ms)."}
                   {activeMode === "jigsaw" && "Interactive magnetic jigsaw puzzle slider challenge."}
                   {activeMode === "adaptive" && "Smart automatic risk-based security escalation."}
                 </div>
