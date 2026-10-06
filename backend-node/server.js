@@ -892,7 +892,7 @@ const OPENAPI_SPEC = {
     version: "4.2.0",
     description: "Enterprise bot mitigation and human verification engine. Provides 1-click Proof-of-Work, Anti-CV Jigsaw Slider, and Server-to-Server Token Validation."
   },
-  servers: [{ url: "http://localhost:3000", description: "Local ShieldCaptcha Engine" }],
+  servers: [{ url: "https://shieldcaptcha.vercel.app", description: "ShieldCaptcha Production Engine" }],
   paths: {
     "/api/v1/health": {
       get: {

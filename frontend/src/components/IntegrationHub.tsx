@@ -91,7 +91,7 @@ app.use(express.json());
 const captcha = new ShieldCaptcha({
   siteKey: process.env.SHIELDCAPTCHA_SITE_KEY,
   secretKey: process.env.SHIELDCAPTCHA_SECRET_KEY,
-  apiUrl: 'https://shield-captcha.vercel.app' // or http://localhost:3000
+  apiUrl: 'https://shieldcaptcha.vercel.app'
 });
 
 // Protect any authentication or form endpoint
@@ -165,7 +165,7 @@ async def login(request: Request):
 
     async with httpx.AsyncClient() as client:
         resp = await client.post(
-            "https://shield-captcha.vercel.app/api/siteverify",
+            "https://shieldcaptcha.vercel.app/api/siteverify",
             headers={"X-Site-Secret": SITE_SECRET},
             json={"token": token, "ip": client_ip}
         )
@@ -186,7 +186,7 @@ $payload = json_encode([
     'ip' => $_SERVER['REMOTE_ADDR']
 ]);
 
-$ch = curl_init('https://shield-captcha.vercel.app/api/siteverify');
+$ch = curl_init('https://shieldcaptcha.vercel.app/api/siteverify');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
@@ -221,7 +221,7 @@ type VerifyPayload struct {
 
 func verifyCaptcha(token, ip string) bool {
 	data, _ := json.Marshal(VerifyPayload{Token: token, IP: ip})
-	req, _ := http.NewRequest("POST", "https://shield-captcha.vercel.app/api/siteverify", bytes.NewBuffer(data))
+	req, _ := http.NewRequest("POST", "https://shieldcaptcha.vercel.app/api/siteverify", bytes.NewBuffer(data))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Site-Secret", "sec_shield_live_secret")
 

@@ -876,7 +876,7 @@
           <button class="btn-copy" onclick="copySnippet('code-frontend')">📋 Copy Snippet</button>
         </div>
         <pre class="code-block" id="code-frontend"><code>&lt;!-- 1. Include the lightweight ShieldCaptcha SDK (Zero Dependencies) --&gt;
-&lt;script src="http://localhost:3000/captcha.js"&gt;&lt;/script&gt;
+&lt;script src="https://shieldcaptcha.vercel.app/captcha.js"&gt;&lt;/script&gt;
 
 &lt;!-- 2. Add container in your form --&gt;
 &lt;form id="login-form"&gt;
@@ -944,7 +944,7 @@ const express = require('express');
 const app = express();
 app.use(express.json());
 
-const CAPTCHA_SERVER = 'http://localhost:3000';
+const CAPTCHA_SERVER = 'https://shieldcaptcha.vercel.app';
 const SITE_SECRET = process.env.SITE_SECRET || 'sec_shield_live_...';
 
 app.post('/api/login', async (req, res) =&gt; {
@@ -980,7 +980,7 @@ from fastapi import FastAPI, HTTPException, Request
 import requests
 
 app = FastAPI()
-CAPTCHA_SERVER = "http://localhost:3000"
+CAPTCHA_SERVER = "https://shieldcaptcha.vercel.app"
 SITE_SECRET = "sec_shield_live_..."
 
 @app.post("/api/login")
@@ -1010,7 +1010,7 @@ $token = $_POST['captchaToken'];
 $siteSecret = 'sec_shield_live_...';
 $clientIp = $_SERVER['REMOTE_ADDR'];
 
-$ch = curl_init('http://localhost:3000/api/siteverify');
+$ch = curl_init('https://shieldcaptcha.vercel.app/api/siteverify');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
@@ -1050,7 +1050,7 @@ func verifyCaptcha(token, clientIP, secret string) (bool, int) {
 		"ip":    clientIP,
 	})
 
-	req, _ := http.NewRequest("POST", "http://localhost:3000/api/siteverify", bytes.NewBuffer(body))
+	req, _ := http.NewRequest("POST", "https://shieldcaptcha.vercel.app/api/siteverify", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+secret)
 

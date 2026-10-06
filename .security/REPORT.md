@@ -1,8 +1,8 @@
 # ShieldCaptcha Enterprise — Security Audit & Hardening Report
 
 **Application**: ShieldCaptcha Enterprise Defense System (v4.2.0)  
-**Target Tested**: `http://localhost:3000` (Local Node.js Engine & Challenge Endpoint)  
-**Execution Environment**: Local Authorized Scope (`ALLOWED_TARGETS = [http://localhost:3000]`)  
+**Target Tested**: `https://shieldcaptcha.vercel.app` (ShieldCaptcha Production Engine & Challenge Endpoint)  
+**Execution Environment**: Authorized Production/Staging Scope (`ALLOWED_TARGETS = [https://shieldcaptcha.vercel.app]`)  
 **Audit Scope**: End-to-End Dynamic Penetration Testing, Source Code Audit, Biomechanical Cryptography Verification, and Self-Defense Telemetry Layer.  
 **Date**: October 5, 2026  
 **Auditor**: Senior Application Security Engineer & QA/SRE Lead  
@@ -24,7 +24,7 @@
 
 ## 2. Findings & Penetration Test Matrix
 
-All 15 test cases were verified dynamically using [`.security/run-audit.js`](file:///c:/Users/Acer/Music/captcha%20system/.security/run-audit.js) against `http://localhost:3000`.
+All 15 test cases were verified dynamically using [`.security/run-audit.js`](file:///c:/Users/Acer/Music/captcha%20system/.security/run-audit.js) against `https://shieldcaptcha.vercel.app`.
 
 | ID | Title | Severity | CVSS v3.1 | Status | Location | Verified Evidence & Remediation |
 | :--- | :--- | :---: | :---: | :---: | :--- | :--- |

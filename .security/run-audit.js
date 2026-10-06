@@ -1,18 +1,21 @@
 /**
  * ShieldCaptcha Comprehensive Security Audit & Verification Runner
- * Verifies all 15 audit & self-defense points against http://localhost:3000
+ * Verifies all 15 audit & self-defense points against https://shieldcaptcha.vercel.app
  */
 
 const http = require('http');
+const https = require('https');
 
-const TARGET = 'http://localhost:3000';
+const TARGET = process.env.TARGET || 'https://shieldcaptcha.vercel.app';
 
 function req(method, path, body = null, headers = {}) {
   return new Promise((resolve, reject) => {
     const url = new URL(path, TARGET);
+    const isHttps = url.protocol === 'https:';
+    const client = isHttps ? https : http;
     const options = {
       hostname: url.hostname,
-      port: url.port,
+      port: url.port || (isHttps ? 443 : 80),
       path: url.pathname + url.search,
       method,
       headers: {
@@ -25,7 +28,7 @@ function req(method, path, body = null, headers = {}) {
       options.headers['Content-Type'] = 'application/json';
       options.headers['Content-Length'] = Buffer.byteLength(data);
     }
-    const request = http.request(options, (res) => {
+    const request = client.request(options, (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => {

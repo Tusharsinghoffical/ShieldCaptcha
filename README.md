@@ -64,7 +64,7 @@ npm run dev
 
 Access the interfaces in your browser:
 - Developer Portal: `http://localhost:3001`
-- Core Engine API: `http://localhost:3000`
+- Core Engine API: `https://shieldcaptcha.vercel.app`
 
 Windows users can also launch both services in a single step using:
 
@@ -109,7 +109,7 @@ Configure the platform using environment variables. When running locally without
 | `SITE_KEY` | No | Public site identifier key for client widgets. | `pub_shield_live_example12345678` |
 | `SITE_SECRET` | No | Secret key used by application servers to verify tokens. | `sec_shield_live_example12345678` |
 | `CAPTCHA_SECRET` | No | Cryptographic HMAC secret for signing verification tokens. | `your-captcha-secret-key-here` |
-| `CAPTCHA_BACKEND_URL` | No | Upstream engine URL when proxying from Next.js. | `http://localhost:3000` |
+| `CAPTCHA_BACKEND_URL` | No | Upstream engine URL when proxying from Next.js. | `https://shieldcaptcha.vercel.app` |
 | `HEALTH_CHECK_SECRET` | No | Secret token to unlock deep diagnostic metrics on `/api/health`. | `your-health-secret-key-here` |
 | `TRUST_PROXY` | No | Set to `true` when operating behind a reverse proxy (e.g., NGINX). | `true` |
 
@@ -126,7 +126,7 @@ Include the standalone client script and mount the widget container in your HTML
   <button type="submit" id="submit-btn" disabled>Sign In</button>
 </form>
 
-<script src="http://localhost:3000/captcha.js"></script>
+<script src="https://shieldcaptcha.vercel.app/captcha.js"></script>
 <script>
   let captchaToken = '';
 
@@ -149,7 +149,7 @@ Include the standalone client script and mount the widget container in your HTML
 Verify the received single-use token against the verification endpoint:
 
 ```bash
-curl -X POST http://localhost:3000/api/v1/siteverify \
+curl -X POST https://shieldcaptcha.vercel.app/api/v1/siteverify \
   -H "Content-Type: application/json" \
   -H "X-Site-Secret: sec_shield_live_example12345678" \
   -d '{"token": "your-verification-token", "ip": "192.0.2.1"}'
@@ -191,7 +191,7 @@ Available scripts defined in `package.json`:
 | Command | Action |
 |---|---|
 | `npm run dev` | Start the Next.js developer portal on `http://localhost:3001` |
-| `npm run dev:backend` | Start the Node.js engine with `--watch` on `http://localhost:3000` |
+| `npm run dev:backend` | Start the Node.js engine with `--watch` on `https://shieldcaptcha.vercel.app` |
 | `npm run build` | Compile the Next.js production bundle |
 | `npm run start` | Serve the Next.js production build |
 | `npm run start:backend` | Start the Node.js engine in production mode |
@@ -258,10 +258,10 @@ Verify service availability via the health check endpoint:
 
 ```bash
 # Basic Health Check
-curl http://localhost:3000/api/health
+curl https://shieldcaptcha.vercel.app/api/health
 
 # Extended Diagnostics (Supply your configured secret)
-curl "http://localhost:3000/api/health?key=your-health-secret-key-here&deep=true"
+curl "https://shieldcaptcha.vercel.app/api/health?key=your-health-secret-key-here&deep=true"
 ```
 
 ## Contributing

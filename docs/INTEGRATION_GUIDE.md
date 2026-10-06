@@ -33,7 +33,7 @@ ShieldCaptcha Enterprise v4.0 is a zero-dependency dual-mode bot defense system 
 
 ```html
 <!-- 1. Include the SDK -->
-<script src="http://localhost:3000/captcha.js"></script>
+<script src="https://shieldcaptcha.vercel.app/captcha.js"></script>
 
 <!-- 2. Form Container -->
 <form id="my-form">
@@ -104,7 +104,7 @@ export const ShieldCaptchaWidget: React.FC<ShieldCaptchaProps> = ({ mode = 'chec
     // Dynamically load captcha.js if not already present
     if (!window.ShieldCaptcha) {
       const script = document.createElement('script');
-      script.src = 'http://localhost:3000/captcha.js';
+      script.src = 'https://shieldcaptcha.vercel.app/captcha.js';
       script.async = true;
       script.onload = () => initWidget();
       document.head.appendChild(script);
@@ -141,7 +141,7 @@ const express = require('express');
 const app = express();
 app.use(express.json());
 
-const CAPTCHA_SERVER = process.env.CAPTCHA_SERVER || 'http://localhost:3000';
+const CAPTCHA_SERVER = process.env.CAPTCHA_SERVER || 'https://shieldcaptcha.vercel.app';
 const SITE_SECRET = process.env.SITE_SECRET || 'sec_shield_live_...';
 
 app.post('/api/login', async (req, res) => {
@@ -188,7 +188,7 @@ import os
 
 app = FastAPI()
 
-CAPTCHA_SERVER = os.getenv("CAPTCHA_SERVER", "http://localhost:3000")
+CAPTCHA_SERVER = os.getenv("CAPTCHA_SERVER", "https://shieldcaptcha.vercel.app")
 SITE_SECRET = os.getenv("SITE_SECRET", "sec_shield_live_...")
 
 @app.post("/api/login")
@@ -230,7 +230,7 @@ $token = $_POST['captchaToken'] ?? '';
 $siteSecret = 'sec_shield_live_...';
 $clientIp = $_SERVER['REMOTE_ADDR'];
 
-$ch = curl_init('http://localhost:3000/api/siteverify');
+$ch = curl_init('https://shieldcaptcha.vercel.app/api/siteverify');
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_POST => true,

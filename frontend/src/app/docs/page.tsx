@@ -175,9 +175,9 @@ export default function DocsPage() {
               <h2 className="text-sm font-bold text-slate-900 mt-6 mb-2">Step 1: Include the client script</h2>
               <p className="text-xs text-slate-500 mb-2">Add the lightweight script to your HTML document:</p>
               <div className="relative bg-[#0f172a] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 mb-6">
-                <code>{`<script src="http://localhost:3000/captcha.js"></script>`}</code>
+                <code>{`<script src="https://shieldcaptcha.vercel.app/captcha.js"></script>`}</code>
                 <button
-                  onClick={() => handleCopy('<script src="http://localhost:3000/captcha.js"></script>', "qs1")}
+                  onClick={() => handleCopy('<script src="https://shieldcaptcha.vercel.app/captcha.js"></script>', "qs1")}
                   className="absolute right-2 top-2 p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-400"
                 >
                   {copiedId === "qs1" ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -218,7 +218,7 @@ export default function DocsPage() {
               <h2 className="text-sm font-bold text-slate-900 mt-6 mb-2">Step 3: Validate on your backend</h2>
               <p className="text-xs text-slate-500 mb-2">Verify the token with the ShieldCaptcha engine before granting access:</p>
               <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 mb-6">
-                <pre>{`const verifyRes = await fetch('http://localhost:3000/api/siteverify', {
+                <pre>{`const verifyRes = await fetch('https://shieldcaptcha.vercel.app/api/siteverify', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -478,7 +478,7 @@ export function AuthForm() {
                   <pre>{`app.post('/api/login', async (req, res) => {
   const { email, captchaToken } = req.body;
 
-  const verifyRes = await fetch('http://localhost:3000/api/siteverify', {
+  const verifyRes = await fetch('https://shieldcaptcha.vercel.app/api/siteverify', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -503,7 +503,7 @@ async def login(payload: dict):
     
     async with httpx.AsyncClient() as client:
         res = await client.post(
-            "http://localhost:3000/api/siteverify",
+            "https://shieldcaptcha.vercel.app/api/siteverify",
             headers={"X-Site-Secret": "sec_your_secret"},
             json={"token": token}
         )
@@ -516,7 +516,7 @@ async def login(payload: dict):
                 )}
 
                 {codeTab === "curl" && (
-                  <pre>{`curl -X POST http://localhost:3000/api/siteverify \\
+                  <pre>{`curl -X POST https://shieldcaptcha.vercel.app/api/siteverify \\
   -H "Content-Type: application/json" \\
   -H "X-Site-Secret: sec_shield_secret" \\
   -d '{"token": "YOUR_CAPTCHA_TOKEN"}'`}</pre>

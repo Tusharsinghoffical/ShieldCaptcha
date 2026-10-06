@@ -67,7 +67,7 @@ docker compose up -d --build
 docker compose ps
 
 # Check engine healthcheck
-curl http://localhost:3000/api/health
+curl https://shieldcaptcha.vercel.app/api/health
 ```
 
 Both containers will automatically restart on system reboot (`restart: unless-stopped`).
@@ -211,11 +211,11 @@ Verify real-time engine health and threat telemetry at any time:
 
 ```bash
 # Basic Health Status
-curl -i http://localhost:3000/api/health
+curl -i https://shieldcaptcha.vercel.app/api/health
 
 # Deep Diagnostics (requires HEALTH_CHECK_SECRET from .env)
-curl "http://localhost:3000/api/health?key=YOUR_HEALTH_CHECK_SECRET&deep=true"
+curl "https://shieldcaptcha.vercel.app/api/health?key=YOUR_HEALTH_CHECK_SECRET&deep=true"
 
 # Live Threat Analytics & Active Challenge Counter
-curl http://localhost:3000/api/stats
+curl https://shieldcaptcha.vercel.app/api/stats
 ```

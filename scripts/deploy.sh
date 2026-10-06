@@ -100,9 +100,9 @@ if [ $HEALTHY -eq 1 ]; then
         echo -e "• Production Gateway (NGINX): http://localhost (Port 80/443)"
     else
         echo -e "• Frontend Portal:            http://localhost:3001"
-        echo -e "• Defense Engine Backend:     http://localhost:3000"
+        echo -e "• Defense Engine Backend:     https://shieldcaptcha.vercel.app"
     fi
-    echo -e "• Healthcheck Endpoint:       http://localhost:3000/api/health"
+    echo -e "• Healthcheck Endpoint:       https://shieldcaptcha.vercel.app/api/health"
     echo -e "=====================================================\n"
 else
     echo -e "\n${COLOR_YELLOW}[WARNING] Containers are taking longer than usual to reach healthy status.${COLOR_NC}"

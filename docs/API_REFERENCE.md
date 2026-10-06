@@ -2,7 +2,7 @@
 
 ShieldCaptcha provides an enterprise-grade REST API for bot defense, human verification, multi-tenant API key management, and server-to-server token validation.
 
-- **Base URL:** `http://localhost:3000` (or your configured production domain)
+- **Base URL:** `https://shieldcaptcha.vercel.app` (or your configured production domain)
 - **Supported Encodings:** `application/json` and `application/x-www-form-urlencoded`
 
 ---
@@ -96,14 +96,14 @@ Validates a client verification token submitted through a web form or mobile cli
 
 #### cURL Example:
 ```bash
-curl -X POST "http://localhost:3000/api/v1/siteverify" \
+curl -X POST "https://shieldcaptcha.vercel.app/api/v1/siteverify" \
   -d "secret=sec_shield_82af936df77c22284deb13e4b71f8ffa&response=TOKEN_FROM_FORM&remoteip=203.0.113.195"
 ```
 
 #### Node.js / Express Example:
 ```javascript
 const verifyCaptcha = async (token, clientIp) => {
-  const response = await fetch("http://localhost:3000/api/v1/siteverify", {
+  const response = await fetch("https://shieldcaptcha.vercel.app/api/v1/siteverify", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
