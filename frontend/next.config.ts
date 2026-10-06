@@ -2,6 +2,14 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: process.env.VERCEL ? undefined : "standalone",
+  async rewrites() {
+    return [
+      {
+        source: "/:path*/sitemap.xml",
+        destination: "/sitemap.xml",
+      },
+    ];
+  },
   async headers() {
     return [
       {
