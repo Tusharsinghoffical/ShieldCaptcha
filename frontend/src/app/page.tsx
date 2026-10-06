@@ -10,6 +10,7 @@ import { AttackSimulator } from "@/components/AttackSimulator";
 import { TokenInspector } from "@/components/TokenInspector";
 import { IntegrationHub } from "@/components/IntegrationHub";
 import { ArchitectureDocs } from "@/components/ArchitectureDocs";
+import { FaqSection } from "@/components/FaqSection";
 import {
   ShieldCheck,
   Sparkles,
@@ -448,9 +449,12 @@ export default function Home() {
         </section>
 
         {/* Section 4: Architecture */}
-        <section id="architecture" className="scroll-mt-24">
+        <section id="architecture" className="scroll-mt-24 mb-16">
           <ArchitectureDocs />
         </section>
+
+        {/* Section 5: Technical SEO FAQ & Knowledge Base */}
+        <FaqSection />
       </main>
 
       <Footer />

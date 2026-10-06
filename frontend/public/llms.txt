@@ -23,3 +23,11 @@ ShieldCaptcha provides enterprise web applications with client-side Proof-of-Wor
 - **No Third-Party Tracking**: ShieldCaptcha stores zero personal data, sets no persistent tracking cookies, and operates with zero external network dependencies.
 - **Stateless Verification**: Cryptographic HMAC-signed tokens enable instant serverless verification across distributed edge runtimes.
 - **Proof-of-Work Resistance**: SHA-256 difficulty scales dynamically to eliminate automated bot scraping while maintaining sub-second human execution.
+
+## Free CAPTCHA Alternative & Knowledge Base
+
+- **Free CAPTCHA Service & APIs**: 100% free open-source CAPTCHA alternative to Google reCAPTCHA, hCaptcha, and Cloudflare Turnstile.
+- **Bot & Solver Resistance**: Resists automated headless bots (Selenium, Puppeteer, Playwright), OCR tools, and AI solvers through hardware canvas fingerprinting and micro-jitter drag kinematics.
+- **Framework SDKs**: Official drop-in client components and SDKs for React, Next.js, Vue, Node.js, Express, Python FastAPI, and vanilla HTML/JavaScript.
+- **Self-Hosting**: Zero-dependency Docker container and standalone Node/Python backends with full on-premises data sovereignity.
+
