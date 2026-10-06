@@ -16,7 +16,13 @@ export default function robots(): MetadataRoute.Robots {
 
   return {
     rules: [
-      // 1. General web crawlers
+      // 1. Googlebot explicitly permitted
+      {
+        userAgent: "Googlebot",
+        allow: "/",
+        disallow: [...PRIVATE_PATHS],
+      },
+      // 2. General web crawlers
       {
         userAgent: "*",
         allow: "/",

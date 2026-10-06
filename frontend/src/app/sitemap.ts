@@ -11,10 +11,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }
 
   return CANONICAL_ROUTES.map((route) => {
-    const url = route.path ? `${SITE_URL}/${route.path}` : SITE_URL;
+    const url = route.path ? `${SITE_URL}/${route.path}` : `${SITE_URL}/`;
     return {
       url,
       lastModified: LAST_UPDATED,
+      changeFrequency: route.changefreq as MetadataRoute.Sitemap[number]["changeFrequency"],
+      priority: parseFloat(route.priority),
     };
   });
 }
+
