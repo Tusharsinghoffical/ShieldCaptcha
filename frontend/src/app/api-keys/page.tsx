@@ -1194,22 +1194,31 @@ func verifyShieldCaptcha(token, clientIP string) (bool, int) {
 
         {/* Modal: Generate New Key Pair */}
         {showCreateModal && (
-          <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 max-w-lg w-full shadow-xl space-y-5 animate-in fade-in zoom-in-95 duration-200">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="create-key-modal-title"
+              className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-7 max-w-lg w-full max-h-[90dvh] flex flex-col shadow-xl animate-in fade-in zoom-in-95 duration-200"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 shrink-0">
                 <div className="flex items-center gap-2">
                   <Key className="w-5 h-5 text-indigo-600" />
-                  <h3 className="font-extrabold text-slate-900 text-base">Generate New API Key Pair</h3>
+                  <h3 id="create-key-modal-title" className="font-extrabold text-slate-900 text-sm sm:text-base">
+                    Generate New API Key Pair
+                  </h3>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="text-slate-400 hover:text-slate-600 p-1 rounded-md hover:bg-slate-100 transition-colors"
+                  className="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-100 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
+                  aria-label="Close modal dialog"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <form onSubmit={handleCreateKey} className="space-y-4 text-xs">
+              <form onSubmit={handleCreateKey} className="space-y-4 text-xs overflow-y-auto py-2 pr-1 flex-1">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">Application Name</label>
                   <input
@@ -1251,18 +1260,18 @@ func verifyShieldCaptcha(token, clientIP string) (bool, int) {
                   </select>
                 </div>
 
-                <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 shrink-0">
                   <button
                     type="button"
                     onClick={() => setShowCreateModal(false)}
-                    className="px-4 py-2 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 font-bold text-xs"
+                    className="px-4 py-2 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 font-bold text-xs min-h-[38px]"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isGenerating || !appName.trim()}
-                    className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-xs shadow-xs transition-all flex items-center gap-2 disabled:opacity-50"
+                    className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-xs shadow-xs transition-all flex items-center gap-2 disabled:opacity-50 min-h-[38px]"
                   >
                     {isGenerating ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
                     Generate Keys

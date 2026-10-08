@@ -134,7 +134,7 @@ export default function SimulatorPage() {
                 </button>
               </div>
 
-              <div className="bg-slate-900 text-slate-100 rounded-xl p-3.5 h-[280px] overflow-y-auto font-mono text-xs flex flex-col gap-2 border border-slate-800 shadow-inner">
+              <div className="bg-slate-900 text-slate-100 rounded-xl p-3 sm:p-3.5 h-[260px] sm:h-[280px] max-h-[45vh] overflow-y-auto font-mono text-xs flex flex-col gap-2 border border-slate-800 shadow-inner">
                 {auditLogs.map((l, i) => (
                   <div key={i} className="flex items-start gap-2 leading-relaxed">
                     <span className="text-slate-400 shrink-0">[{l.time}]</span>

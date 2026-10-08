@@ -162,7 +162,7 @@ export function TokenInspector({ token }: TokenInspectorProps) {
               type="button"
               onClick={handleTestSiteverify}
               disabled={testingVerify}
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-bold shadow-xs transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-bold shadow-xs transition-all disabled:opacity-50 flex items-center justify-center gap-2 min-h-[42px]"
             >
               <Server className="w-3.5 h-3.5" />
               <span>{testingVerify ? "Verifying On Backend..." : "Test Backend /api/siteverify"}</span>

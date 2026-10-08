@@ -88,8 +88,8 @@ export function CaptchaWidget({
   }, [mode, controller]);
 
   return (
-    <div className="w-full flex flex-col items-center justify-center min-h-[70px] overflow-hidden">
-      <div ref={containerRef} className="w-full flex justify-center max-w-full overflow-hidden" />
+    <div className="w-full flex flex-col items-center justify-center min-h-[70px] transition-all">
+      <div ref={containerRef} className="w-full flex justify-center max-w-full transition-all" />
     </div>
   );
 }

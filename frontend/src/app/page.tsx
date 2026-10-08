@@ -120,7 +120,7 @@ export default function Home() {
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f033_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f033_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
 
       {/* Subtle Top Ethereal Accent Light */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[340px] bg-gradient-to-b from-indigo-500/10 via-sky-500/5 to-transparent blur-3xl pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[900px] h-[340px] bg-gradient-to-b from-indigo-500/10 via-sky-500/5 to-transparent blur-3xl pointer-events-none" />
 
       <Navbar />
 
@@ -178,14 +178,14 @@ export default function Home() {
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
                   Select Defense Mode
                 </label>
-                <div className="grid grid-cols-3 bg-slate-100/90 p-1.5 rounded-xl border border-slate-200 text-xs font-semibold gap-1.5">
+                <div className="grid grid-cols-3 bg-slate-100/90 p-1 sm:p-1.5 rounded-xl border border-slate-200 text-xs font-semibold gap-1 sm:gap-1.5">
                   <button
                     type="button"
                     onClick={() => {
                       setActiveMode("checkbox");
                       addLog("info", "MODE_SWITCH", "Active mode switched to: 1-Click Checkbox");
                     }}
-                    className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg transition-all text-xs font-bold ${
+                    className={`flex items-center justify-center gap-1 sm:gap-1.5 py-2.5 px-1.5 sm:px-2 rounded-lg transition-all text-xs font-bold min-h-[42px] ${
                       activeMode === "checkbox"
                         ? "bg-white text-indigo-700 shadow-xs border border-slate-200/90"
                         : "text-slate-600 hover:text-slate-900"
@@ -201,7 +201,7 @@ export default function Home() {
                       setActiveMode("jigsaw");
                       addLog("info", "MODE_SWITCH", "Active mode switched to: Jigsaw Puzzle");
                     }}
-                    className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg transition-all text-xs font-bold ${
+                    className={`flex items-center justify-center gap-1 sm:gap-1.5 py-2.5 px-1.5 sm:px-2 rounded-lg transition-all text-xs font-bold min-h-[42px] ${
                       activeMode === "jigsaw"
                         ? "bg-white text-indigo-700 shadow-xs border border-slate-200/90"
                         : "text-slate-600 hover:text-slate-900"
@@ -217,7 +217,7 @@ export default function Home() {
                       setActiveMode("adaptive");
                       addLog("info", "MODE_SWITCH", "Active mode switched to: Adaptive Step-Up");
                     }}
-                    className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg transition-all text-xs font-bold ${
+                    className={`flex items-center justify-center gap-1 sm:gap-1.5 py-2.5 px-1.5 sm:px-2 rounded-lg transition-all text-xs font-bold min-h-[42px] ${
                       activeMode === "adaptive"
                         ? "bg-white text-indigo-700 shadow-xs border border-slate-200/90"
                         : "text-slate-600 hover:text-slate-900"
@@ -307,11 +307,11 @@ export default function Home() {
             <div id="simulator" className="scroll-mt-24 lg:col-span-7 bg-white rounded-2xl p-4 sm:p-6 lg:p-7 border border-slate-200/90 shadow-sm flex flex-col gap-5">
               {/* Tab Navigation Bar */}
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-1.5 bg-slate-100/90 p-1 rounded-xl border border-slate-200 overflow-x-auto max-w-full">
+                <div className="flex items-center gap-1.5 bg-slate-100/90 p-1 rounded-xl border border-slate-200 overflow-x-auto max-w-full no-scrollbar">
                   <button
                     type="button"
                     onClick={() => setRightTab("kinematics")}
-                    className={`flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-lg transition-all shrink-0 ${
+                    className={`flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg transition-all shrink-0 min-h-[38px] ${
                       rightTab === "kinematics"
                         ? "bg-white text-indigo-700 shadow-xs border border-slate-200/90"
                         : "text-slate-600 hover:text-slate-900"
@@ -324,7 +324,7 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={() => setRightTab("simulator")}
-                    className={`flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-lg transition-all shrink-0 ${
+                    className={`flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg transition-all shrink-0 min-h-[38px] ${
                       rightTab === "simulator"
                         ? "bg-white text-indigo-700 shadow-xs border border-slate-200/90"
                         : "text-slate-600 hover:text-slate-900"
@@ -337,7 +337,7 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={() => setRightTab("audit")}
-                    className={`flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-lg transition-all shrink-0 ${
+                    className={`flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg transition-all shrink-0 min-h-[38px] ${
                       rightTab === "audit"
                         ? "bg-white text-indigo-700 shadow-xs border border-slate-200/90"
                         : "text-slate-600 hover:text-slate-900"
@@ -390,7 +390,7 @@ export default function Home() {
                   </div>
 
                   {/* Console Stream */}
-                  <div className="p-4 h-[260px] overflow-y-auto font-mono text-xs flex flex-col gap-2.5 select-text">
+                  <div className="p-3 sm:p-4 h-[240px] sm:h-[260px] max-h-[45vh] overflow-y-auto font-mono text-xs flex flex-col gap-2.5 select-text">
                     {auditLogs.map((l, i) => (
                       <div key={i} className="flex items-start gap-2.5 leading-relaxed">
                         <span className="text-slate-500 shrink-0">[{l.time}]</span>

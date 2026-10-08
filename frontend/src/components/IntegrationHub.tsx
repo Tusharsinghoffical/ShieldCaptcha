@@ -317,14 +317,14 @@ func verifyCaptcha(token, ip string) bool {
               <span>Step 2: Server Verification</span>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex flex-wrap bg-slate-200/70 rounded-lg p-0.5 border border-slate-300 text-[11px]">
+            <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
+              <div className="flex bg-slate-200/70 rounded-lg p-0.5 border border-slate-300 text-[11px] overflow-x-auto no-scrollbar max-w-[calc(100%-80px)] sm:max-w-none">
                 {(["package", "node", "python", "php", "go"] as const).map((b) => (
                   <button
                     key={b}
                     type="button"
                     onClick={() => setBackendTab(b)}
-                    className={`px-2 py-1 rounded-md font-medium transition-all ${
+                    className={`px-2.5 py-1 rounded-md font-medium transition-all shrink-0 min-h-[30px] ${
                       backendTab === b ? "bg-white text-indigo-700 shadow-xs font-bold" : "text-slate-600 hover:text-slate-900"
                     }`}
                   >
@@ -336,7 +336,7 @@ func verifyCaptcha(token, ip string) bool {
               <button
                 type="button"
                 onClick={() => copyToClipboard(snippets[backendTab], "backend")}
-                className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-md bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-all shadow-xs shrink-0"
+                className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-md bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-all shadow-xs shrink-0 min-h-[30px]"
               >
                 {copiedKey === "backend" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copiedKey === "backend" ? "Copied!" : "Copy"}</span>

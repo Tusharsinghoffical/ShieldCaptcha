@@ -209,7 +209,7 @@ export default function DemoPage() {
                 </button>
               </div>
 
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col items-center justify-center min-h-[140px] text-center">
+              <div className="bg-slate-50 p-2.5 sm:p-4 rounded-xl border border-slate-200 flex flex-col items-center justify-center min-h-[140px] text-center w-full max-w-full overflow-hidden">
                 <span className="text-xs font-semibold text-slate-700 mb-3 block">
                   Complete the Security Challenge ({activeMode === "checkbox" ? "1-Click PoW" : activeMode === "jigsaw" ? "Jigsaw Slider" : "Auto Step-Up"}):
                 </span>
@@ -236,7 +236,7 @@ export default function DemoPage() {
                     type="button"
                     onClick={handleSubmitVerification}
                     disabled={submitting}
-                    className="w-full py-3 rounded-xl font-bold text-sm transition-all shadow-md text-white bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20 active:scale-[0.99] flex items-center justify-center gap-2"
+                    className="w-full py-3.5 rounded-xl font-bold text-sm transition-all shadow-md text-white bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20 active:scale-[0.99] flex items-center justify-center gap-2 min-h-[44px]"
                   >
                     {submitting ? (
                       <>

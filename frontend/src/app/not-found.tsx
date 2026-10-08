@@ -32,24 +32,24 @@ export default function NotFound() {
           The requested page or endpoint does not exist or has been relocated within the ShieldCaptcha defense infrastructure.
         </p>
 
-        <div className="flex flex-wrap items-center justify-center gap-3 w-full max-w-md">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-md">
           <Link
             href="/"
-            className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-md shadow-indigo-500/20 transition-all active:scale-[0.98]"
+            className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-md shadow-indigo-500/20 transition-all active:scale-[0.98] min-h-[44px]"
           >
             <Home className="w-4 h-4" />
             <span>Return Home</span>
           </Link>
           <Link
             href="/demo"
-            className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm border border-slate-200 shadow-sm transition-all"
+            className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm border border-slate-200 shadow-sm transition-all min-h-[44px]"
           >
             <Sliders className="w-4 h-4 text-indigo-600" />
             <span>Try Demo</span>
           </Link>
           <Link
             href="/docs"
-            className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm border border-slate-200 shadow-sm transition-all"
+            className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm border border-slate-200 shadow-sm transition-all min-h-[44px]"
           >
             <FileText className="w-4 h-4 text-indigo-600" />
             <span>Documentation</span>

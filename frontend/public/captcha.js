@@ -438,9 +438,11 @@
         <div style="display: flex; align-items: center; justify-content: space-between;">
           <div style="display: flex; align-items: center; gap: 12px;">
             <button type="button" class="sc-chk-btn" style="
-              width: 28px;
-              height: 28px;
-              border-radius: 7px;
+              width: 32px;
+              height: 32px;
+              min-width: 32px;
+              min-height: 32px;
+              border-radius: 8px;
               border: 2px solid #cbd5e1;
               background: #f8fafc;
               cursor: pointer;
@@ -450,6 +452,7 @@
               padding: 0;
               transition: all 0.2s ease;
               outline: none;
+              position: relative;
             ">
               <div class="sc-chk-spinner" style="display: none; width: 14px; height: 14px; border: 2px solid rgba(99,102,241,0.3); border-top-color: #4f46e5; border-radius: 50%; animation: sc-spin 0.7s linear infinite;"></div>
               <svg class="sc-chk-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
@@ -567,8 +570,10 @@
               backdrop-filter: blur(8px);
               border: 1px solid rgba(0, 0, 0, 0.08);
               color: #334155;
-              width: 26px;
-              height: 26px;
+              width: 32px;
+              height: 32px;
+              min-width: 32px;
+              min-height: 32px;
               border-radius: 50%;
               display: flex;
               align-items: center;
@@ -577,7 +582,7 @@
               outline: none;
               box-shadow: 0 2px 5px rgba(0,0,0,0.06);
             ">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
               </svg>
             </button>
@@ -627,12 +632,12 @@
             Slide the puzzle piece to fit
           </div>
 
-          <div class="sc-knob" style="
+          <div class="sc-knob" tabindex="0" role="slider" aria-label="Slide puzzle piece to verify" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" style="
             position: absolute; left: 0; top: 0; width: ${KN}px; height: ${KN}px;
             border-radius: 50%; background: linear-gradient(135deg, #4f46e5, #4338ca);
             box-shadow: 0 4px 12px rgba(79, 70, 229, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.3);
             cursor: grab; touch-action: none; display: flex; align-items: center; justify-content: center;
-            color: #ffffff; transition: background 0.2s ease, transform 0.15s ease;
+            color: #ffffff; transition: background 0.2s ease, transform 0.15s ease; outline: none;
           ">
             <svg class="sc-knob-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="9 18 15 12 9 6"></polyline>
@@ -848,14 +853,19 @@
       if (availableW > 0 && availableW < W) {
         currentScale = +(availableW / W).toFixed(4);
         root.style.transform = `scale(${currentScale})`;
-        root.style.transformOrigin = 'center top';
+        root.style.transformOrigin = 'top center';
         const unscaledH = root.offsetHeight || 220;
         root.style.marginBottom = `${-(unscaledH * (1 - currentScale))}px`;
+        const horizOverflow = (W * (1 - currentScale)) / 2;
+        root.style.marginLeft = `${-horizOverflow}px`;
+        root.style.marginRight = `${-horizOverflow}px`;
       } else {
         currentScale = 1;
         root.style.transform = '';
         root.style.transformOrigin = '';
         root.style.marginBottom = '';
+        root.style.marginLeft = '';
+        root.style.marginRight = '';
       }
     }
 
@@ -1190,6 +1200,28 @@
       if (!isDragging) return;
       updateKnobPosition(knobStartX + ((e.clientX - dragStartX) / currentScale));
       recordPoint(e);
+    });
+
+    // WCAG 2.1.1 Keyboard Navigation for Jigsaw Slider
+    knob.addEventListener('keydown', e => {
+      if (!isReady || isSolved || isSubmitting) return;
+      const step = 14;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (!isDragging) { isDragging = true; dragStartTimestamp = performance.now(); }
+        updateKnobPosition(knobX + step);
+        recordPoint({ clientX: knobX, clientY: 20, isTrusted: e.isTrusted, pressure: 0 });
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (!isDragging) { isDragging = true; dragStartTimestamp = performance.now(); }
+        updateKnobPosition(knobX - step);
+        recordPoint({ clientX: knobX, clientY: 20, isTrusted: e.isTrusted, pressure: 0 });
+      } else if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (isDragging) {
+          finishDrag({ clientX: knobX, clientY: 20, isTrusted: e.isTrusted, pressure: 0 });
+        }
+      }
     });
 
     async function finishDrag(e) {

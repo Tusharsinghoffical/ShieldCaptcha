@@ -142,16 +142,17 @@ export function Hero() {
           </a>
 
           {/* NPM Package Pill */}
-          <div className="flex items-center gap-2 bg-slate-900 text-slate-300 px-3.5 py-2.5 rounded-xl border border-slate-800 font-mono text-xs shadow-xs">
+          <div className="flex items-center gap-2 bg-slate-900 text-slate-300 pl-3.5 pr-1.5 py-1.5 rounded-xl border border-slate-800 font-mono text-xs shadow-xs min-h-[44px]">
             <span className="text-slate-500 select-none">$</span>
             <span className="text-slate-200">npm i @shieldcaptcha/client</span>
             <button
               type="button"
               onClick={copyNpmCommand}
               title="Copy to clipboard"
-              className="ml-1.5 p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              aria-label="Copy npm install command to clipboard"
+              className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors inline-flex items-center justify-center min-w-[36px] min-h-[36px]"
             >
-              {copiedNpm ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+              {copiedNpm ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
             </button>
           </div>
         </motion.div>
@@ -161,76 +162,76 @@ export function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.32 }}
-          className="w-full grid grid-cols-2 sm:grid-cols-5 gap-3 text-left"
+          className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3 text-left"
         >
           {/* Card 1: Challenges */}
-          <div className="group relative bg-white rounded-xl p-4 border border-slate-200/90 shadow-xs hover:border-sky-300 hover:shadow-md transition-all flex flex-col justify-between overflow-hidden">
+          <div className="group relative bg-white rounded-xl p-3.5 sm:p-4 border border-slate-200/90 shadow-xs hover:border-sky-300 hover:shadow-md transition-all flex flex-col justify-between overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-0.5 bg-sky-500 opacity-60 group-hover:opacity-100 transition-opacity" />
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between mb-2">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between mb-2">
               <span>Challenges</span>
               <Activity className="w-3.5 h-3.5 text-sky-600" />
             </span>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl sm:text-3xl font-black font-mono text-slate-900">{stats.totalChallenges}</span>
+              <span className="text-xl sm:text-2xl lg:text-3xl font-black font-mono text-slate-900">{stats.totalChallenges}</span>
               <span className="text-[10px] text-sky-600 font-bold">issued</span>
             </div>
-            <span className="text-[10px] text-slate-400 mt-1">PoW + Jigsaw pipeline</span>
+            <span className="text-[10px] text-slate-400 mt-1 truncate">PoW + Jigsaw pipeline</span>
           </div>
 
           {/* Card 2: Verified */}
-          <div className="group relative bg-white rounded-xl p-4 border border-slate-200/90 shadow-xs hover:border-emerald-300 hover:shadow-md transition-all flex flex-col justify-between overflow-hidden">
+          <div className="group relative bg-white rounded-xl p-3.5 sm:p-4 border border-slate-200/90 shadow-xs hover:border-emerald-300 hover:shadow-md transition-all flex flex-col justify-between overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-0.5 bg-emerald-500 opacity-60 group-hover:opacity-100 transition-opacity" />
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between mb-2">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between mb-2">
               <span>Verified</span>
               <Users className="w-3.5 h-3.5 text-emerald-600" />
             </span>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-700">{stats.verifiedHumans}</span>
+              <span className="text-xl sm:text-2xl lg:text-3xl font-black font-mono text-emerald-700">{stats.verifiedHumans}</span>
               <span className="text-[10px] text-emerald-600 font-bold">humans</span>
             </div>
-            <span className="text-[10px] text-slate-400 mt-1">100% genuine pass rate</span>
+            <span className="text-[10px] text-slate-400 mt-1 truncate">100% genuine pass</span>
           </div>
 
           {/* Card 3: Blocked */}
-          <div className="group relative bg-white rounded-xl p-4 border border-slate-200/90 shadow-xs hover:border-rose-300 hover:shadow-md transition-all flex flex-col justify-between overflow-hidden">
+          <div className="group relative bg-white rounded-xl p-3.5 sm:p-4 border border-slate-200/90 shadow-xs hover:border-rose-300 hover:shadow-md transition-all flex flex-col justify-between overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-0.5 bg-rose-500 opacity-60 group-hover:opacity-100 transition-opacity" />
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between mb-2">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between mb-2">
               <span>Blocked Bots</span>
               <Flame className="w-3.5 h-3.5 text-rose-600" />
             </span>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl sm:text-3xl font-black font-mono text-rose-700">{stats.blockedBots}</span>
+              <span className="text-xl sm:text-2xl lg:text-3xl font-black font-mono text-rose-700">{stats.blockedBots}</span>
               <span className="text-[10px] text-rose-600 font-bold">stopped</span>
             </div>
-            <span className="text-[10px] text-slate-400 mt-1">Zero automated bypasses</span>
+            <span className="text-[10px] text-slate-400 mt-1 truncate">Zero bot bypasses</span>
           </div>
 
           {/* Card 4: Escalations */}
-          <div className="group relative bg-white rounded-xl p-4 border border-slate-200/90 shadow-xs hover:border-purple-300 hover:shadow-md transition-all flex flex-col justify-between overflow-hidden">
+          <div className="group relative bg-white rounded-xl p-3.5 sm:p-4 border border-slate-200/90 shadow-xs hover:border-purple-300 hover:shadow-md transition-all flex flex-col justify-between overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-0.5 bg-purple-500 opacity-60 group-hover:opacity-100 transition-opacity" />
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between mb-2">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between mb-2">
               <span>Escalated</span>
               <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
             </span>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl sm:text-3xl font-black font-mono text-purple-700">{stats.escalatedToPuzzle}</span>
+              <span className="text-xl sm:text-2xl lg:text-3xl font-black font-mono text-purple-700">{stats.escalatedToPuzzle}</span>
               <span className="text-[10px] text-purple-600 font-bold">puzzles</span>
             </div>
-            <span className="text-[10px] text-slate-400 mt-1">Adaptive risk trigger</span>
+            <span className="text-[10px] text-slate-400 mt-1 truncate">Adaptive risk trigger</span>
           </div>
 
           {/* Card 5: Latency */}
-          <div className="group relative bg-white col-span-2 sm:col-span-1 rounded-xl p-4 border border-slate-200/90 shadow-xs hover:border-indigo-300 hover:shadow-md transition-all flex flex-col justify-between overflow-hidden">
+          <div className="group relative bg-white col-span-2 sm:col-span-2 lg:col-span-1 rounded-xl p-3.5 sm:p-4 border border-slate-200/90 shadow-xs hover:border-indigo-300 hover:shadow-md transition-all flex flex-col justify-between overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-0.5 bg-indigo-500 opacity-60 group-hover:opacity-100 transition-opacity" />
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between mb-2">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between mb-2">
               <span>Avg Latency</span>
               <Zap className="w-3.5 h-3.5 text-indigo-600" />
             </span>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl sm:text-3xl font-black font-mono text-indigo-700">18ms</span>
+              <span className="text-xl sm:text-2xl lg:text-3xl font-black font-mono text-indigo-700">18ms</span>
               <span className="text-[10px] text-indigo-600 font-bold">fast</span>
             </div>
-            <span className="text-[10px] text-slate-400 mt-1">Multi-threaded Web Worker</span>
+            <span className="text-[10px] text-slate-400 mt-1 truncate">Multi-thread Worker</span>
           </div>
         </motion.div>
       </div>
