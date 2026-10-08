@@ -40,8 +40,6 @@ Thumbs.db
 *.swp
 *.swo
 
-# Security Audit runtime databases & alert logs
-.security/*.sqlite
-.security/*.log
-.security/*.db
-.security/__pycache__/
+# Security Audit directory (reports, plans, local monitor database)
+.security/
+
