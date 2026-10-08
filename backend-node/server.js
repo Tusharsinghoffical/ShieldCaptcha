@@ -1725,7 +1725,7 @@ server.listen(PORT, HOST, () => {
   console.log(`[SHIELD] ShieldCaptcha Enterprise v4.2 - Developer REST API Edition`);
   console.log(`[SERVER] Listening on http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}`);
   console.log(`[KEY]    SITE_KEY:    ${SITE_KEY}`);
-  console.log(`[SECRET] SITE_SECRET: ${SITE_SECRET}`);
+  console.log(`[SECRET] SITE_SECRET: ${SITE_SECRET.slice(0, 4)}****`);
   console.log(`[API]    Siteverify:  POST http://localhost:${PORT}/api/v1/siteverify`);
   console.log(`[CRYPTO] AES-CBC-128 payload encryption enabled`);
   console.log(`[CONFIG] BASE_POW_BITS=${BASE_POW_BITS} | MAX_POW_BITS=${MAX_POW_BITS} | IP_LOCK_THRESHOLD=${IP_LOCK_THRESHOLD}`);
