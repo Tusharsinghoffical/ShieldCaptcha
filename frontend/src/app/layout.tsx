@@ -146,11 +146,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetbrainsMono.variable} scroll-smooth`}
+      className="scroll-smooth"
       suppressHydrationWarning
     >
       <body
-        className="font-sans antialiased bg-[#f8fafc] text-slate-800 min-h-screen flex flex-col selection:bg-indigo-500/20 selection:text-indigo-900"
+        className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased bg-[#f8fafc] text-slate-800 min-h-screen flex flex-col selection:bg-indigo-500/20 selection:text-indigo-900`}
         suppressHydrationWarning
       >
         {/* Google Analytics (gtag.js) */}
@@ -194,6 +194,8 @@ export default function RootLayout({
           </>
         )}
 
+        {children}
+
         {/* Structured Data Schemas (JSON-LD) */}
         {schemas.map((schema, i) => (
           <script
@@ -203,7 +205,6 @@ export default function RootLayout({
           />
         ))}
 
-        {children}
         <Analytics />
         <SpeedInsights />
       </body>
