@@ -1,11 +1,11 @@
 import crypto from "crypto";
 import zlib from "zlib";
 
-// Secret keys (configured via Vercel Environment Variables or defaults)
-const CAPTCHA_SECRET = process.env.CAPTCHA_SECRET || "sec_shield_serverless_vault_secret_2026";
-const SITE_KEY = process.env.SITE_KEY || process.env.NEXT_PUBLIC_SITE_KEY || "pub_shield_live_vercel_default";
-const SITE_SECRET = process.env.SITE_SECRET || "sec_shield_live_vercel_default";
-const HEALTH_KEY = process.env.HEALTH_CHECK_SECRET || "shield_health_internal_2026";
+// Secret keys (configured via Environment Variables with cryptographically secure runtime fallback)
+const CAPTCHA_SECRET = process.env.CAPTCHA_SECRET || crypto.randomBytes(32).toString("hex");
+const SITE_KEY = process.env.SITE_KEY || process.env.NEXT_PUBLIC_SITE_KEY || "pub_shield_live_" + crypto.randomBytes(12).toString("hex");
+const SITE_SECRET = process.env.SITE_SECRET || "sec_shield_live_" + crypto.randomBytes(16).toString("hex");
+const HEALTH_KEY = process.env.HEALTH_CHECK_SECRET || SITE_SECRET;
 
 const W = 320, H = 160, P = 48; // Canvas & piece dimensions
 const CHALLENGE_TTL = 180000;    // 3 minutes
@@ -741,7 +741,13 @@ export const serverlessEngine = {
         token: passToken,
         score: passScore,
         mode: "checkbox_pow",
-        authorized: true
+        authorized: true,
+        audit: {
+          score: passScore,
+          mode: "checkbox_pow",
+          powVerified: true,
+          env: envAudit
+        }
       };
     }
 
@@ -781,7 +787,13 @@ export const serverlessEngine = {
       token: passToken,
       score: finalScore,
       mode: "jigsaw_kinematics",
-      authorized: true
+      authorized: true,
+      audit: {
+        score: finalScore,
+        mode: "jigsaw_kinematics",
+        kinematics: kinematics.audit,
+        env: envAudit
+      }
     };
   },
 
