@@ -199,9 +199,12 @@ export default function RootLayout({
         {/* Structured Data Schemas (JSON-LD) */}
         {schemas.map((schema, i) => (
           <script
-            key={i}
+            key={`schema-${i}`}
             type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+            suppressHydrationWarning
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(schema).replace(/</g, "\\u003c"),
+            }}
           />
         ))}
 
@@ -211,4 +214,3 @@ export default function RootLayout({
     </html>
   );
 }
-

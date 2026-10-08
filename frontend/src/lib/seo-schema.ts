@@ -141,14 +141,14 @@ export function generateSiteSchema() {
         "@type": "HowToStep",
         position: 1,
         name: "Install Client Package or Embed Script",
-        text: "Install @shieldcaptcha/react via npm (`npm i @shieldcaptcha/react`) or embed the standalone `<script src='https://shieldcaptcha.vercel.app/captcha.js'></script>` in your HTML.",
+        text: "Install @shieldcaptcha/react via npm (npm i @shieldcaptcha/react) or embed the standalone script from https://shieldcaptcha.vercel.app/captcha.js in your HTML.",
         url: `${SITE_URL}/docs`,
       },
       {
         "@type": "HowToStep",
         position: 2,
         name: "Embed the Protected Form Widget",
-        text: "Place `<div id='shield-captcha' data-sitekey='YOUR_KEY'></div>` or `<ShieldCaptcha siteKey='YOUR_KEY' onVerify={handleVerify} />` in your login or signup form.",
+        text: "Place the shield-captcha container div (with data-sitekey) or ShieldCaptcha React component in your login or signup form.",
         url: `${SITE_URL}/integration`,
       },
       {
@@ -194,7 +194,7 @@ export function generateSiteSchema() {
         name: "How can developers integrate ShieldCaptcha API into React, Next.js, and HTML?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "ShieldCaptcha integrates in under 3 minutes. In HTML, include `<div id='shield-captcha' data-sitekey='YOUR_KEY'></div>` with captcha.js. In React/Next.js, install `@shieldcaptcha/react` and pass `siteKey` and `onVerify`. Then verify the single-use HMAC-SHA256 token on your backend via `/api/siteverify`.",
+          text: "ShieldCaptcha integrates in under 3 minutes. In HTML, include the shield-captcha container element with captcha.js. In React/Next.js, install @shieldcaptcha/react and pass siteKey and onVerify. Then verify the single-use HMAC-SHA256 token on your backend via /api/siteverify.",
         },
       },
       {
