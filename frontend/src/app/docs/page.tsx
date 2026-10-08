@@ -11,7 +11,11 @@ import {
   ChevronRight, 
   ArrowLeft,
   ArrowRight,
-  ExternalLink
+  ExternalLink,
+  BookOpen,
+  X,
+  Menu,
+  SlidersHorizontal,
 } from "lucide-react";
 
 interface DocTopic {
@@ -42,6 +46,8 @@ export default function DocsPage() {
   const [search, setSearch] = useState<string>("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [codeTab, setCodeTab] = useState<"node" | "python" | "curl">("node");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
+  const [mobileCategoryFilter, setMobileCategoryFilter] = useState<string>("All");
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -51,52 +57,208 @@ export default function DocsPage() {
 
   const categories = Array.from(new Set(docTopics.map((t) => t.category)));
 
-  const filteredTopics = docTopics.filter(
-    (t) =>
+  const filteredTopics = docTopics.filter((t) => {
+    const matchesSearch =
       t.title.toLowerCase().includes(search.toLowerCase()) ||
-      t.category.toLowerCase().includes(search.toLowerCase())
-  );
+      t.category.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory =
+      mobileCategoryFilter === "All" || t.category === mobileCategoryFilter;
+    return matchesSearch && matchesCategory;
+  });
 
   const currentIndex = docTopics.findIndex((t) => t.id === activeTopic);
   const prevTopic = currentIndex > 0 ? docTopics[currentIndex - 1] : null;
   const nextTopic = currentIndex < docTopics.length - 1 ? docTopics[currentIndex + 1] : null;
 
+  const currentTopicData = docTopics.find((t) => t.id === activeTopic);
+
   return (
     <div className="min-h-screen flex flex-col bg-white text-slate-800 antialiased font-sans">
       <Navbar />
 
-      {/* Clean Sub-Header (Standard Docs style) */}
-      <div className="border-b border-slate-200 bg-slate-50 px-6 py-3 sticky top-14 z-20">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs text-slate-500">
-            <Link href="/" className="hover:text-slate-900 transition-colors">Documentation</Link>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-indigo-600 font-medium">
-              {docTopics.find((t) => t.id === activeTopic)?.category}
+      {/* Clean Sub-Header with Mobile Topic Switcher */}
+      <div className="border-b border-slate-200 bg-slate-50/95 backdrop-blur-md px-3 sm:px-6 py-2.5 sm:py-3 sticky top-14 z-20">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
+          {/* Mobile Menu Trigger Button */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(true)}
+            className="md:hidden inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 shadow-xs text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-all touch-target-min shrink-0 max-w-[65%]"
+            aria-label="Open documentation topic menu"
+          >
+            <BookOpen className="w-4 h-4 text-indigo-600 shrink-0" />
+            <span className="truncate text-slate-900">
+              {currentTopicData?.title}
             </span>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-slate-900 font-semibold">
-              {docTopics.find((t) => t.id === activeTopic)?.title}
+            <ChevronRight className="w-3.5 h-3.5 text-slate-400 rotate-90 shrink-0" />
+          </button>
+
+          {/* Desktop Breadcrumbs */}
+          <div className="hidden md:flex items-center gap-2 text-xs text-slate-500 min-w-0">
+            <Link href="/" className="hover:text-slate-900 transition-colors">Documentation</Link>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <span className="text-indigo-600 font-medium truncate">
+              {currentTopicData?.category}
+            </span>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <span className="text-slate-900 font-semibold truncate">
+              {currentTopicData?.title}
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-600 font-semibold">
+          {/* Right Action Items */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <span className="text-[10px] sm:text-[11px] font-mono px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-600 font-semibold">
               v4.0.0
             </span>
             <Link
               href="/demo"
-              className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold inline-flex items-center gap-1"
+              className="text-[11px] sm:text-xs text-indigo-600 hover:text-indigo-800 font-semibold inline-flex items-center gap-1 touch-target-min"
             >
-              Interactive Demo <ExternalLink className="w-3 h-3" />
+              <span className="hidden xs:inline">Interactive Demo</span>
+              <span className="xs:hidden">Demo</span>
+              <ExternalLink className="w-3 h-3" />
             </Link>
           </div>
         </div>
       </div>
 
+      {/* Mobile Horizontal Category Filter Strip */}
+      <div className="md:hidden border-b border-slate-200 bg-white px-3 py-2 overflow-x-auto no-scrollbar flex items-center gap-1.5 scroll-smooth">
+        <button
+          type="button"
+          onClick={() => setMobileCategoryFilter("All")}
+          className={`px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-colors touch-target-min flex items-center justify-center ${
+            mobileCategoryFilter === "All"
+              ? "bg-indigo-600 text-white shadow-xs"
+              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+          }`}
+        >
+          All Topics ({docTopics.length})
+        </button>
+        {categories.map((cat) => {
+          const isSelected = mobileCategoryFilter === cat;
+          return (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => {
+                setMobileCategoryFilter(cat);
+                const firstTopic = docTopics.find((t) => t.category === cat);
+                if (firstTopic) {
+                  setActiveTopic(firstTopic.id);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+              }}
+              className={`px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-colors touch-target-min flex items-center justify-center ${
+                isSelected
+                  ? "bg-indigo-600 text-white shadow-xs font-bold"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              {cat}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Mobile Drawer Navigation Sheet Modal */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-hidden="true"
+          />
+
+          {/* Slide-over Drawer Sheet */}
+          <div className="relative w-full max-w-xs sm:max-w-sm bg-white h-full flex flex-col shadow-2xl z-10 animate-in slide-in-from-left duration-200">
+            {/* Drawer Header */}
+            <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-indigo-600" />
+                <span className="font-bold text-slate-900 text-sm">Documentation Topics</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors touch-target-min flex items-center justify-center"
+                aria-label="Close navigation"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Live Search Input */}
+            <div className="p-3 border-b border-slate-100 bg-white">
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                <input
+                  type="text"
+                  placeholder="Search topics..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-8 pr-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* Categorized List */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-5">
+              {categories.map((cat) => {
+                const topics = filteredTopics.filter((t) => t.category === cat);
+                if (topics.length === 0) return null;
+
+                return (
+                  <div key={cat} className="space-y-1">
+                    <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2">
+                      {cat}
+                    </div>
+                    {topics.map((t) => {
+                      const isActive = activeTopic === t.id;
+                      return (
+                        <button
+                          key={t.id}
+                          onClick={() => {
+                            setActiveTopic(t.id);
+                            setMobileMenuOpen(false);
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                          }}
+                          className={`w-full text-left px-3 py-2.5 rounded-lg text-xs transition-colors flex items-center justify-between min-h-[44px] ${
+                            isActive
+                              ? "bg-indigo-50 text-indigo-700 font-bold border border-indigo-200"
+                              : "text-slate-700 hover:bg-slate-100 active:bg-slate-200"
+                          }`}
+                        >
+                          <span className="truncate pr-2">{t.title}</span>
+                          {isActive && <ChevronRight className="w-3.5 h-3.5 text-indigo-600 shrink-0" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Quick Demo Footer Link inside Drawer */}
+            <div className="p-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs">
+              <span className="text-slate-500 font-mono text-[11px]">ShieldCaptcha v4.0</span>
+              <Link
+                href="/demo"
+                onClick={() => setMobileMenuOpen(false)}
+                className="font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 touch-target-min"
+              >
+                Launch Sandbox <ExternalLink className="w-3 h-3" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Docs Body */}
-      <div className="flex-1 max-w-7xl w-full mx-auto flex">
-        {/* Clean Left Navigation Sidebar */}
+      <div className="flex-1 max-w-7xl w-full mx-auto flex min-w-0">
+        {/* Clean Left Navigation Sidebar (Desktop) */}
         <aside className="w-64 shrink-0 border-r border-slate-200 bg-[#f8fafc] p-5 sticky top-28 h-[calc(100vh-7rem)] overflow-y-auto hidden md:block">
           {/* Simple Search */}
           <div className="relative mb-5">
@@ -140,7 +302,7 @@ export default function DocsPage() {
         </aside>
 
         {/* Main Article Content */}
-        <main className="flex-1 p-6 md:p-10 max-w-3xl">
+        <main className="flex-1 p-4 sm:p-6 md:p-10 max-w-3xl w-full min-w-0">
           
           {/* ================= 1. INTRODUCTION ================= */}
           {activeTopic === "introduction" && (
@@ -174,11 +336,12 @@ export default function DocsPage() {
 
               <h2 className="text-sm font-bold text-slate-900 mt-6 mb-2">Step 1: Include the client script</h2>
               <p className="text-xs text-slate-500 mb-2">Add the lightweight script to your HTML document:</p>
-              <div className="relative bg-[#0f172a] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 mb-6">
+              <div className="relative bg-[#0f172a] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 mb-6 overflow-x-auto max-w-full">
                 <code>{`<script src="https://shieldcaptcha.vercel.app/captcha.js"></script>`}</code>
                 <button
                   onClick={() => handleCopy('<script src="https://shieldcaptcha.vercel.app/captcha.js"></script>', "qs1")}
-                  className="absolute right-2 top-2 p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-400"
+                  className="absolute right-2 top-2 p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 touch-target-min flex items-center justify-center"
+                  aria-label="Copy script tag"
                 >
                   {copiedId === "qs1" ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                 </button>
@@ -186,7 +349,7 @@ export default function DocsPage() {
 
               <h2 className="text-sm font-bold text-slate-900 mt-6 mb-2">Step 2: Mount the widget container</h2>
               <p className="text-xs text-slate-500 mb-2">Place an empty container inside your form and mount the widget:</p>
-              <div className="relative bg-[#0f172a] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 mb-6">
+              <div className="relative bg-[#0f172a] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 mb-6 overflow-x-auto max-w-full">
                 <pre>{`<!-- HTML Form -->
 <form id="auth-form">
   <input type="email" id="email" required />
@@ -209,7 +372,8 @@ export default function DocsPage() {
 </script>`}</pre>
                 <button
                   onClick={() => handleCopy(`ShieldCaptcha.mount(document.getElementById('captcha-box'), { mode: 'checkbox', onToken: (t) => { ... } });`, "qs2")}
-                  className="absolute right-2 top-2 p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-400"
+                  className="absolute right-2 top-2 p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 touch-target-min flex items-center justify-center"
+                  aria-label="Copy mounting script"
                 >
                   {copiedId === "qs2" ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                 </button>
@@ -217,7 +381,7 @@ export default function DocsPage() {
 
               <h2 className="text-sm font-bold text-slate-900 mt-6 mb-2">Step 3: Validate on your backend</h2>
               <p className="text-xs text-slate-500 mb-2">Verify the token with the ShieldCaptcha engine before granting access:</p>
-              <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 mb-6">
+              <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 mb-6 overflow-x-auto max-w-full">
                 <pre>{`const verifyRes = await fetch('https://shieldcaptcha.vercel.app/api/siteverify', {
   method: 'POST',
   headers: {
@@ -298,14 +462,14 @@ if (!result.success) {
               </p>
 
               <h2 className="text-sm font-bold text-slate-900 mt-6 mb-2">1. Start the Server</h2>
-              <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 mb-4">
+              <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 mb-4 overflow-x-auto max-w-full">
                 <pre>{`cd backend-node
 node server.js`}</pre>
               </div>
 
               <h2 className="text-sm font-bold text-slate-900 mt-6 mb-2">2. Production PM2 Cluster</h2>
               <p className="text-xs text-slate-500 mb-2">To run in production across all CPU threads:</p>
-              <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 mb-6">
+              <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 mb-6 overflow-x-auto max-w-full">
                 <pre>{`npm install -g pm2
 pm2 start server.js -i max --name "shield-captcha"`}</pre>
               </div>
@@ -321,7 +485,7 @@ pm2 start server.js -i max --name "shield-captcha"`}</pre>
               </p>
 
               <h2 className="text-sm font-bold text-slate-900 mt-6 mb-2">Install and Run</h2>
-              <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 mb-6">
+              <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 mb-6 overflow-x-auto max-w-full">
                 <pre>{`cd backend-python
 pip install fastapi uvicorn pillow
 
@@ -382,7 +546,7 @@ python -m uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4`}</pre>
                 The global <code>ShieldCaptcha</code> object mounts and manages the widget lifecycle:
               </p>
 
-              <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 mb-6">
+              <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 mb-6 overflow-x-auto max-w-full">
                 <pre>{`const controller = ShieldCaptcha.mount(element, {
   mode: 'checkbox', // 'checkbox' | 'jigsaw' | 'adaptive'
   
@@ -410,7 +574,7 @@ controller.reset();              // Reset state`}</pre>
                 Embed the component in React 18/19 or Next.js App Router:
               </p>
 
-              <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 mb-6">
+              <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 mb-6 overflow-x-auto max-w-full">
                 <pre>{`import { useState } from "react";
 import { CaptchaWidget } from "@/components/CaptchaWidget";
 
@@ -446,10 +610,10 @@ export function AuthForm() {
               </p>
 
               {/* Simple Tabs */}
-              <div className="flex border-b border-slate-200 mb-4 gap-4 text-xs font-medium">
+              <div className="flex flex-wrap border-b border-slate-200 mb-4 gap-2 sm:gap-4 text-xs font-medium">
                 <button
                   onClick={() => setCodeTab("node")}
-                  className={`pb-2 transition-colors ${
+                  className={`pb-2.5 pt-1 px-1 transition-colors min-h-[40px] flex items-center ${
                     codeTab === "node" ? "border-b-2 border-indigo-600 text-indigo-700 font-bold" : "text-slate-500 hover:text-slate-900"
                   }`}
                 >
@@ -457,7 +621,7 @@ export function AuthForm() {
                 </button>
                 <button
                   onClick={() => setCodeTab("python")}
-                  className={`pb-2 transition-colors ${
+                  className={`pb-2.5 pt-1 px-1 transition-colors min-h-[40px] flex items-center ${
                     codeTab === "python" ? "border-b-2 border-indigo-600 text-indigo-700 font-bold" : "text-slate-500 hover:text-slate-900"
                   }`}
                 >
@@ -465,7 +629,7 @@ export function AuthForm() {
                 </button>
                 <button
                   onClick={() => setCodeTab("curl")}
-                  className={`pb-2 transition-colors ${
+                  className={`pb-2.5 pt-1 px-1 transition-colors min-h-[40px] flex items-center ${
                     codeTab === "curl" ? "border-b-2 border-indigo-600 text-indigo-700 font-bold" : "text-slate-500 hover:text-slate-900"
                   }`}
                 >
@@ -473,7 +637,7 @@ export function AuthForm() {
                 </button>
               </div>
 
-              <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 mb-6">
+              <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 mb-6 overflow-x-auto max-w-full">
                 {codeTab === "node" && (
                   <pre>{`app.post('/api/login', async (req, res) => {
   const { email, captchaToken } = req.body;
@@ -556,7 +720,7 @@ async def login(payload: dict):
               <p className="text-sm text-slate-600 leading-relaxed mb-4">
                 Human cursor interaction adheres to biological minimum-jerk equations (Flash & Hogan):
               </p>
-              <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 mb-4">
+              <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 mb-4 overflow-x-auto max-w-full">
                 Jerk = Integral of ( (d³x/dt³)² + (d³y/dt³)² ) dt
               </div>
               <p className="text-xs text-slate-500">
@@ -575,20 +739,20 @@ async def login(payload: dict):
                 <div className="border border-slate-200 rounded-lg p-3.5 bg-slate-50">
                   <div className="font-mono font-bold text-indigo-700 mb-1">GET / POST /api/challenge</div>
                   <p className="text-slate-600 mb-2">Generates a challenge session and PoW prefix.</p>
-                  <pre className="bg-[#0f172a] text-slate-200 p-2.5 rounded">{`Request:  { "mode": "checkbox" | "jigsaw" | "adaptive" }
+                  <pre className="bg-[#0f172a] text-slate-200 p-2.5 rounded overflow-x-auto max-w-full">{`Request:  { "mode": "checkbox" | "jigsaw" | "adaptive" }
 Response: { "id": "...", "bits": 12, "prefix": "...", "token": "..." }`}</pre>
                 </div>
 
                 <div className="border border-slate-200 rounded-lg p-3.5 bg-slate-50">
                   <div className="font-mono font-bold text-emerald-700 mb-1">POST /api/verify</div>
                   <p className="text-slate-600 mb-2">Submits solution for kinematic & PoW evaluation.</p>
-                  <pre className="bg-[#0f172a] text-slate-200 p-2.5 rounded">{`Response: { "ok": true, "token": "<HMAC-Token>", "score": 95 }`}</pre>
+                  <pre className="bg-[#0f172a] text-slate-200 p-2.5 rounded overflow-x-auto max-w-full">{`Response: { "ok": true, "token": "<HMAC-Token>", "score": 95 }`}</pre>
                 </div>
 
                 <div className="border border-slate-200 rounded-lg p-3.5 bg-slate-50">
                   <div className="font-mono font-bold text-sky-700 mb-1">POST /api/siteverify</div>
                   <p className="text-slate-600 mb-2">Backend verification endpoint. Validates single-use JTI token.</p>
-                  <pre className="bg-[#0f172a] text-slate-200 p-2.5 rounded">{`Header:   X-Site-Secret: <YOUR_SECRET>
+                  <pre className="bg-[#0f172a] text-slate-200 p-2.5 rounded overflow-x-auto max-w-full">{`Header:   X-Site-Secret: <YOUR_SECRET>
 Body:     { "token": "<CAPTCHA_TOKEN>" }`}</pre>
                 </div>
               </div>
@@ -603,7 +767,7 @@ Body:     { "token": "<CAPTCHA_TOKEN>" }`}</pre>
                 Recommended reverse proxy configuration for Nginx:
               </p>
 
-              <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 mb-6">
+              <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-200 mb-6 overflow-x-auto max-w-full">
                 <pre>{`server {
     listen 443 ssl http2;
     server_name captcha.yourdomain.com;
@@ -626,24 +790,30 @@ Body:     { "token": "<CAPTCHA_TOKEN>" }`}</pre>
           )}
 
           {/* Previous / Next Topic Navigation */}
-          <div className="mt-12 pt-6 border-t border-slate-200 flex items-center justify-between text-xs">
+          <div className="mt-12 pt-6 border-t border-slate-200 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between text-xs">
             {prevTopic ? (
               <button
-                onClick={() => setActiveTopic(prevTopic.id)}
-                className="text-slate-600 hover:text-slate-900 flex items-center gap-1.5 transition-colors font-medium px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50"
+                onClick={() => {
+                  setActiveTopic(prevTopic.id);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className="w-full sm:w-auto text-slate-700 hover:text-slate-900 flex items-center justify-center sm:justify-start gap-1.5 transition-colors font-medium px-4 py-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 min-h-[44px] touch-target-min"
               >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>{prevTopic.title}</span>
+                <ArrowLeft className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">{prevTopic.title}</span>
               </button>
-            ) : <div />}
+            ) : <div className="hidden sm:block" />}
 
             {nextTopic && (
               <button
-                onClick={() => setActiveTopic(nextTopic.id)}
-                className="text-slate-600 hover:text-slate-900 flex items-center gap-1.5 transition-colors font-medium px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 ml-auto"
+                onClick={() => {
+                  setActiveTopic(nextTopic.id);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className="w-full sm:w-auto text-slate-700 hover:text-slate-900 flex items-center justify-center sm:justify-end gap-1.5 transition-colors font-medium px-4 py-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 sm:ml-auto min-h-[44px] touch-target-min"
               >
-                <span>{nextTopic.title}</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <span className="truncate">{nextTopic.title}</span>
+                <ArrowRight className="w-3.5 h-3.5 shrink-0" />
               </button>
             )}
           </div>
