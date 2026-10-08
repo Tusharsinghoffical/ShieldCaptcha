@@ -1626,7 +1626,7 @@ const server = http.createServer(async (req, res) => {
     const healthSecret = process.env.HEALTH_CHECK_SECRET || SITE_SECRET || 'shield_health_internal_2026';
     const querySecret = queryParams.get('secret') || queryParams.get('token') || queryParams.get('key');
     const headerSecret = req.headers['x-health-token'] || req.headers['x-internal-token'] || (req.headers['authorization'] || '').replace('Bearer ', '');
-    const isAuthorized = (querySecret && querySecret === healthSecret) || (headerSecret && headerSecret === healthSecret) || (queryParams.get('deep') === 'true');
+    const isAuthorized = (querySecret && querySecret === healthSecret) || (headerSecret && headerSecret === healthSecret);
 
     const baseHealth = {
       status: 'healthy',
