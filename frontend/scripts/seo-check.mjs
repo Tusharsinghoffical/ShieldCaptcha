@@ -32,6 +32,7 @@ console.log("==================================================");
 // 1. Check Public Metadata Files
 console.log("\n[1] Checking Required Protocol Files:");
 assert(fs.existsSync(path.join(ROOT, "public", "llms.txt")), "public/llms.txt exists");
+assert(fs.existsSync(path.join(ROOT, "public", "llms-full.txt")), "public/llms-full.txt exists");
 assert(fs.existsSync(path.join(ROOT, "public", ".well-known", "security.txt")), "public/.well-known/security.txt exists");
 assert(fs.existsSync(path.join(ROOT, "public", "site.webmanifest")), "public/site.webmanifest exists");
 assert(fs.existsSync(path.join(ROOT, "public", "favicon.svg")), "public/favicon.svg exists");

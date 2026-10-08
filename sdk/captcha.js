@@ -388,10 +388,12 @@
     root.style.cssText = `
       position: relative;
       width: ${W}px;
+      max-width: 100%;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       user-select: none;
       -webkit-user-select: none;
       box-sizing: border-box;
+      transition: transform 0.15s ease-out;
     `;
 
     if (!document.getElementById('sc-enterprise-styles')) {
@@ -680,6 +682,15 @@
 
     container.appendChild(root);
 
+    let resizeObserver = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => autoResize());
+      resizeObserver.observe(container);
+    } else {
+      window.addEventListener('resize', autoResize);
+    }
+    setTimeout(autoResize, 50);
+
     const viewCheckbox   = root.querySelector('.sc-view-checkbox');
     const viewJigsaw     = root.querySelector('.sc-view-jigsaw');
     const chkBtn         = root.querySelector('.sc-chk-btn');
@@ -830,6 +841,24 @@
     let isEventTrusted = true;
     let dragStartTimestamp = 0;
 
+    let currentScale = 1;
+    function autoResize() {
+      if (!root || !container) return;
+      const availableW = container.clientWidth || container.getBoundingClientRect().width;
+      if (availableW > 0 && availableW < W) {
+        currentScale = +(availableW / W).toFixed(4);
+        root.style.transform = `scale(${currentScale})`;
+        root.style.transformOrigin = 'center top';
+        const unscaledH = root.offsetHeight || 220;
+        root.style.marginBottom = `${-(unscaledH * (1 - currentScale))}px`;
+      } else {
+        currentScale = 1;
+        root.style.transform = '';
+        root.style.transformOrigin = '';
+        root.style.marginBottom = '';
+      }
+    }
+
     const getPieceX = () => knobX * (W - P) / (W - KN);
 
     function updateKnobPosition(newKnobX) {
@@ -884,6 +913,7 @@
         viewCheckbox.style.display = 'none';
         viewJigsaw.style.display = 'block';
       }
+      setTimeout(autoResize, 10);
     }
 
     /* ------------------------------------------------------------------
@@ -1096,7 +1126,12 @@
           chkLabel.textContent = "You're verified!";
           chkSub.textContent = `Human verified • Score: ${result.score || 98}`;
           failCount = 0;
-          onToken(result.token, { score: result.score || 98, mode: 'checkbox_pow' });
+          const metaObj = { score: result.score || 98, mode: 'checkbox_pow', audit: result.audit || {} };
+          try {
+            onToken(result.token, metaObj);
+          } catch (callbackErr) {
+            console.warn('ShieldCaptcha host onToken callback error:', callbackErr);
+          }
         } else {
           failCount++;
           chkSpinner.style.display = 'none';
@@ -1105,7 +1140,8 @@
           shakeWidget();
           setTimeout(() => initChallenge('checkbox'), 1200);
         }
-      } catch {
+      } catch (err) {
+        if (isSolved) return;
         failCount++;
         isSubmitting = false;
         chkSpinner.style.display = 'none';
@@ -1120,7 +1156,7 @@
     function recordPoint(e) {
       isEventTrusted = isEventTrusted && e.isTrusted;
       const rect = knob.parentNode.getBoundingClientRect();
-      const currentY = +(e.clientY - rect.top).toFixed(1);
+      const currentY = +((e.clientY - rect.top) / currentScale).toFixed(1);
       const currentX = +getPieceX().toFixed(1);
       const timeMs = Math.round(performance.now() - startTime);
       // v4.2: Record pointer pressure (0 for non-touch = mouse, 0.5 for default touch, varies for stylus)
@@ -1152,7 +1188,7 @@
 
     knob.addEventListener('pointermove', e => {
       if (!isDragging) return;
-      updateKnobPosition(knobStartX + (e.clientX - dragStartX));
+      updateKnobPosition(knobStartX + ((e.clientX - dragStartX) / currentScale));
       recordPoint(e);
     });
 
@@ -1247,7 +1283,16 @@
           badgeDot.style.background = '#10b981';
           badgeText.textContent = `Human (Score ${result.score || 96})`;
           setStatus('Verification Successful!', '#059669');
-          onToken(result.token, result.audit);
+          const metaObj = {
+            score: result.score || 96,
+            mode: result.mode || 'jigsaw_kinematics',
+            audit: result.audit || {}
+          };
+          try {
+            onToken(result.token, metaObj);
+          } catch (callbackErr) {
+            console.warn('ShieldCaptcha host onToken callback error:', callbackErr);
+          }
         } else {
           failCount++;
           attemptCount++;
@@ -1279,7 +1324,8 @@
             setTimeout(() => { guideIcon && guideIcon.classList.remove('sc-warn-icon'); initChallenge('jigsaw'); }, 1400);
           }
         }
-      } catch {
+      } catch (err) {
+        if (isSolved) return;
         isSubmitting = false;
         failCount++;
         setStatus('Verification failed. Retrying...', '#ef4444');
@@ -1406,6 +1452,8 @@
       simulateBot,
       destroy() {
         if (lockoutInterval) clearInterval(lockoutInterval);
+        if (resizeObserver) resizeObserver.disconnect();
+        window.removeEventListener('resize', autoResize);
         window.removeEventListener('pointermove', handleAmbient);
         sensor.destroy();
       }

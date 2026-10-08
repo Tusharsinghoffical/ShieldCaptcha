@@ -67,11 +67,11 @@ export function TokenInspector({ token }: TokenInspectorProps) {
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 sm:p-7 border border-slate-200/90 shadow-sm flex flex-col gap-5">
+    <div className="bg-white rounded-2xl p-4 sm:p-6 lg:p-7 border border-slate-200/90 shadow-sm flex flex-col gap-5">
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600">
+          <div className="p-2 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 shrink-0">
             <KeyRound className="w-4 h-4" />
           </div>
           <div>
@@ -82,7 +82,7 @@ export function TokenInspector({ token }: TokenInspectorProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {token && (
             <button
               type="button"
@@ -114,22 +114,22 @@ export function TokenInspector({ token }: TokenInspectorProps) {
       {token && claims ? (
         <div className="space-y-4">
           {/* Claims Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
-            <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/90">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs font-mono">
+            <div className="bg-slate-50 p-3 sm:p-3.5 rounded-xl border border-slate-200/90">
               <span className="text-[10px] text-slate-500 font-sans font-bold uppercase tracking-wider block mb-1">
                 DEFENSE MODE
               </span>
               <span className="text-sky-700 font-bold text-sm">{claims.mode || "verified"}</span>
             </div>
 
-            <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/90">
+            <div className="bg-slate-50 p-3 sm:p-3.5 rounded-xl border border-slate-200/90">
               <span className="text-[10px] text-slate-500 font-sans font-bold uppercase tracking-wider block mb-1">
                 TRUST SCORE
               </span>
               <span className="text-emerald-700 font-bold text-sm">{claims.score || 95} / 100</span>
             </div>
 
-            <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/90">
+            <div className="bg-slate-50 p-3 sm:p-3.5 rounded-xl border border-slate-200/90">
               <span className="text-[10px] text-slate-500 font-sans font-bold uppercase tracking-wider block mb-1">
                 BOUND CLIENT IP
               </span>
@@ -138,7 +138,7 @@ export function TokenInspector({ token }: TokenInspectorProps) {
               </span>
             </div>
 
-            <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/90">
+            <div className="bg-slate-50 p-3 sm:p-3.5 rounded-xl border border-slate-200/90">
               <span className="text-[10px] text-slate-500 font-sans font-bold uppercase tracking-wider block mb-1">
                 SINGLE-USE NONCE
               </span>

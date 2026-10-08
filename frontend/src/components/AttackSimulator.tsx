@@ -72,7 +72,7 @@ export function AttackSimulator({ controller, onLog }: AttackSimulatorProps) {
   };
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 w-full">
       <div className="grid grid-cols-1 gap-2.5">
         {attacks.map((att) => {
           const Icon = att.icon;
@@ -81,10 +81,10 @@ export function AttackSimulator({ controller, onLog }: AttackSimulatorProps) {
           return (
             <div
               key={att.id}
-              className="bg-white rounded-xl p-3.5 flex items-center justify-between gap-4 border border-slate-200 hover:border-slate-300 transition-all shadow-xs"
+              className="bg-white rounded-xl p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border border-slate-200 hover:border-slate-300 transition-all shadow-xs"
             >
               <div className="flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-slate-50 border border-slate-200 mt-0.5">
+                <div className="p-2 rounded-lg bg-slate-50 border border-slate-200 mt-0.5 shrink-0">
                   <Icon className={`w-4 h-4 ${att.color}`} />
                 </div>
                 <div>
@@ -97,7 +97,7 @@ export function AttackSimulator({ controller, onLog }: AttackSimulatorProps) {
                 type="button"
                 onClick={() => handleSimulate(att.id)}
                 disabled={isLoading}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 transition-all whitespace-nowrap active:scale-95 disabled:opacity-50"
+                className="w-full sm:w-auto px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 transition-all text-center shrink-0 active:scale-95 disabled:opacity-50"
               >
                 {isLoading ? "Simulating..." : "Test Attack"}
               </button>
@@ -107,16 +107,16 @@ export function AttackSimulator({ controller, onLog }: AttackSimulatorProps) {
       </div>
 
       {lastVerdict && (
-        <div className={`p-3 rounded-lg text-xs border flex items-center justify-between ${
+        <div className={`p-3 rounded-lg text-xs border flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
           lastVerdict.ok ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-rose-50 border-rose-200 text-rose-800"
         }`}>
           <div className="flex items-center gap-2">
-            {lastVerdict.ok ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <ShieldAlert className="w-4 h-4 text-rose-600" />}
+            {lastVerdict.ok ? <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" /> : <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0" />}
             <span className="font-semibold">
               Verdict: {lastVerdict.ok ? "Approved" : `BLOCKED (${lastVerdict.reason || "anomaly_detected"})`}
             </span>
           </div>
-          <span className="font-mono text-[11px] font-bold">Trust Score: {lastVerdict.score || 0}</span>
+          <span className="font-mono text-[11px] font-bold shrink-0">Trust Score: {lastVerdict.score || 0}</span>
         </div>
       )}
     </div>

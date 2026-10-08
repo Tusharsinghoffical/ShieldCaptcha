@@ -153,9 +153,9 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
             {/* Left Column: Protected Authentication Form */}
-            <div className="lg:col-span-5 bg-white rounded-2xl p-6 sm:p-7 border border-slate-200/90 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-6">
+            <div className="lg:col-span-5 bg-white rounded-2xl p-4 sm:p-6 lg:p-7 border border-slate-200/90 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-5 sm:gap-6">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                 <div className="flex items-center gap-2">
                   <div className="p-1.5 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600">
@@ -262,12 +262,14 @@ export default function Home() {
                     <span>Security Verification</span>
                     <span className="text-[10px] text-slate-400 font-mono">ShieldCaptcha Universal Widget</span>
                   </label>
-                  <div className="p-3 bg-slate-50/60 rounded-xl border border-slate-200/90 flex justify-center">
+                  <div className="p-2 sm:p-3 bg-slate-50/60 rounded-xl border border-slate-200/90 flex justify-center w-full max-w-full overflow-hidden">
                     <CaptchaWidget
                       mode={activeMode}
                       onToken={(token, meta) => {
                         setVerifiedToken(token);
-                        addLog("pass", "HUMAN_PASS", `Verified human! Trust Score: ${meta.score || 95} (mode: ${meta.mode || activeMode})`);
+                        const trustScore = meta?.score ?? 95;
+                        const trustMode = meta?.mode || activeMode;
+                        addLog("pass", "HUMAN_PASS", `Verified human! Trust Score: ${trustScore} (mode: ${trustMode})`);
                       }}
                       onReset={() => setVerifiedToken("")}
                       onTrajectory={(pt) => setLastPoint(pt)}
@@ -302,14 +304,14 @@ export default function Home() {
             </div>
 
             {/* Right Column: Diagnostics & Telemetry Station */}
-            <div id="simulator" className="scroll-mt-24 lg:col-span-7 bg-white rounded-2xl p-6 sm:p-7 border border-slate-200/90 shadow-sm flex flex-col gap-5">
+            <div id="simulator" className="scroll-mt-24 lg:col-span-7 bg-white rounded-2xl p-4 sm:p-6 lg:p-7 border border-slate-200/90 shadow-sm flex flex-col gap-5">
               {/* Tab Navigation Bar */}
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-1.5 bg-slate-100/90 p-1 rounded-xl border border-slate-200">
+                <div className="flex items-center gap-1.5 bg-slate-100/90 p-1 rounded-xl border border-slate-200 overflow-x-auto max-w-full">
                   <button
                     type="button"
                     onClick={() => setRightTab("kinematics")}
-                    className={`flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-lg transition-all ${
+                    className={`flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-lg transition-all shrink-0 ${
                       rightTab === "kinematics"
                         ? "bg-white text-indigo-700 shadow-xs border border-slate-200/90"
                         : "text-slate-600 hover:text-slate-900"
@@ -322,7 +324,7 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={() => setRightTab("simulator")}
-                    className={`flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-lg transition-all ${
+                    className={`flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-lg transition-all shrink-0 ${
                       rightTab === "simulator"
                         ? "bg-white text-indigo-700 shadow-xs border border-slate-200/90"
                         : "text-slate-600 hover:text-slate-900"
@@ -335,7 +337,7 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={() => setRightTab("audit")}
-                    className={`flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-lg transition-all ${
+                    className={`flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-lg transition-all shrink-0 ${
                       rightTab === "audit"
                         ? "bg-white text-indigo-700 shadow-xs border border-slate-200/90"
                         : "text-slate-600 hover:text-slate-900"

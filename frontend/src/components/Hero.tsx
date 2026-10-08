@@ -92,16 +92,16 @@ export function Hero() {
           <span className="text-slate-500 text-[11px] font-medium">Dual-Layer Zero-Cookie Defense</span>
         </motion.div>
 
-        {/* Primary Headline */}
+        {/* Primary Headline with Entity Recognition */}
         <motion.h1
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 leading-[1.12] max-w-4xl mb-5"
         >
-          Fast for Real Humans. <br />
+          ShieldCaptcha Enterprise <br />
           <span className="bg-gradient-to-r from-indigo-600 via-sky-600 to-emerald-600 bg-clip-text text-transparent">
-            Impossible for Automated Bots.
+            Fast for Real Humans. Impossible for Bots.
           </span>
         </motion.h1>
 

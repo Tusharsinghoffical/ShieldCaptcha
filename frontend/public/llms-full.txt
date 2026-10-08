@@ -1,0 +1,244 @@
+# ShieldCaptcha Enterprise — Full Technical Documentation & LLM Knowledge Base
+
+> Comprehensive technical specification, architecture, REST API reference, and integration guides for ShieldCaptcha Enterprise.
+> Website: https://shieldcaptcha.vercel.app/
+> GitHub: https://github.com/Tusharsinghoffical/ShieldCaptcha
+> Author: Tushar Singh (https://codewithmrsingh.me/)
+> License: MIT License
+
+---
+
+## 1. Executive Summary & Value Proposition
+
+ShieldCaptcha Enterprise is an open-source, privacy-preserving, zero-cookie autonomous bot defense and human verification platform. Engineered as a high-throughput drop-in alternative to Google reCAPTCHA, Cloudflare Turnstile, and hCaptcha, ShieldCaptcha eliminates third-party tracking, vendor lock-in, and costly enterprise subscription fees while offering sub-20ms client verification latency.
+
+### Core Distinctions
+1. **Zero Tracking Cookies**: Compliant with GDPR, CCPA, and India's Digital Personal Data Protection (DPDP) Act. Does not set tracking cookies or require cookie banners.
+2. **Client-Side Proof-of-Work (PoW)**: Solves dynamic leading-zero SHA-256 challenges in a Web Worker to impose an asymmetric computational burden on attackers.
+3. **Biomechanical Kinematics Trajectory Physics**: Analyzes mouse curvature, acceleration, micro-tremors, and jerk derivatives (Flash & Hogan minimum-jerk model) to distinguish human biological movement from automated headless scripts.
+4. **Single-Use Cryptographic HMAC-SHA256 Token Vault**: Guarantees atomic replay protection with 300-second expiration.
+5. **Self-Hostable Dual Engines**: Run standalone via Docker Compose with a zero-dependency Node.js native engine or Python 3.11+ FastAPI enterprise engine.
+
+---
+
+## 2. Competitive Benchmark Comparison Matrix
+
+| Feature | ShieldCaptcha Enterprise | Google reCAPTCHA v2/v3 | Cloudflare Turnstile | hCaptcha |
+| :--- | :--- | :--- | :--- | :--- |
+| **Pricing** | 100% Free & Open Source | Freemium ($1+/1K after limits) | Free tier / Enterprise upsell | Freemium / Paid |
+| **Tracking Cookies** | ZERO (No cookies set) | Yes (Google profiling cookies) | Minimal (Cloudflare cookies) | Yes (Third-party cookies) |
+| **Self-Hostable** | Yes (Docker, Node, Python) | No (SaaS only) | No (SaaS only) | No (SaaS only) |
+| **Proof-of-Work** | Yes (Dynamic SHA-256) | No | Proprietary PoW | No |
+| **Kinematics Analysis** | Yes (Curvature & Tremor) | Proprietary behavioral AI | Proprietary telemetry | Image label interaction |
+| **Human Friction** | 0-1 Click (<20ms latency) | Frustrating 9-image grids | 0-1 Click | Multi-step labeling puzzles |
+| **Data Sovereignty** | 100% on-premises / private cloud | Google US Cloud | Cloudflare US/EU Edge | hCaptcha Cloud |
+| **GDPR / DPDP Compliance** | Native (No banner required) | Requires cookie consent | Requires privacy disclosure | Requires privacy disclosure |
+
+---
+
+## 3. Four-Tier Defense Architecture
+
+### Tier 1: Dynamic Proof-of-Work (PoW) Challenge
+When a visitor loads a protected form, the ShieldCaptcha client Web Worker fetches a dynamic cryptographic challenge string and difficulty target:
+- The challenge consists of `timestamp:siteKey:randomSalt`.
+- The Web Worker iteratively computes SHA-256 hashes until finding a nonce whose hash starts with the required number of leading zeros (e.g., 16-22 bits).
+- Difficulty scales adaptively based on client IP reputation, request velocity, and risk heuristics.
+- For legitimate humans on modern phones or laptops, this takes 15-35 milliseconds. For a bot attempting 50,000 automated submissions per hour, this requires megawatts of compute power, making credential stuffing economically unviable.
+
+### Tier 2: Biomechanical Kinematics Trajectory Physics
+Headless automation tools (Puppeteer, Playwright, Selenium, Pyppeteer) typically generate straight linear mouse paths or teleport cursor positions instantly.
+ShieldCaptcha records fine-grained pointer coordinates `(x, y, timestamp)` and computes:
+- **Velocity Derivatives & Jerk**: Biological movement follows the Flash & Hogan minimum-jerk model, featuring smooth bell-shaped velocity profiles with natural acceleration and deceleration.
+- **Micro-Tremors & Physiological Jitter**: Human hands exert subtle 8-12 Hz involuntary micro-tremors when holding a mouse or touching a screen.
+- **Curvature Distribution**: Biological gestures exhibit continuous curvature rather than jagged piecewise linear segments.
+
+### Tier 3: Anti-Computer-Vision Interlocking Jigsaw Slider
+When risk heuristics indicate an elevated threat score (e.g., proxy IP, datacenter ASN, anomalous browser fingerprints), ShieldCaptcha escalates from the 1-Click checkbox to a dynamic jigsaw slider puzzle:
+- The puzzle canvas is procedurally generated with dynamic luminance distortion, randomized edge curves, and anti-OCR noise patterns.
+- Defeats standard computer vision and contour-detection AI models while remaining intuitive for human users.
+
+### Tier 4: HMAC-SHA256 Token Vault & Server Verification
+Upon passing client validation, the ShieldCaptcha engine signs an authorization token:
+- Signed with HMAC-SHA256 using the system master secret.
+- Contains the client IP hash, timestamp, challenge nonce, and trust score.
+- Stored with single-use atomic consumption semantics to eliminate replay attacks.
+- Enforces strict 300-second expiration.
+
+---
+
+## 4. API Reference & Code Integration
+
+### Endpoints
+- `GET /api/v1/challenge`: Fetches a fresh Proof-of-Work challenge and salt.
+- `POST /api/v1/verify`: Client-side verification endpoint submitting PoW nonce and kinematics payload.
+- `POST /api/v1/siteverify`: Server-to-server validation endpoint confirming token validity with `SITE_SECRET`.
+- `GET /api/v1/health`: System diagnostics and defense engine status.
+
+### Client-Side Vanilla HTML / JavaScript
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="https://shieldcaptcha.vercel.app/captcha.js" async></script>
+</head>
+<body>
+  <form id="login-form" action="/login" method="POST">
+    <input type="email" name="email" required placeholder="name@company.com" />
+    <input type="password" name="password" required />
+
+    <!-- ShieldCaptcha Widget -->
+    <div id="shield-captcha" data-sitekey="pub_shield_live_9f788949ea051e68d98aa33b"></div>
+
+    <button type="submit">Log In</button>
+  </form>
+</body>
+</html>
+```
+
+### React & Next.js Client Component
+```tsx
+"use client";
+
+import React, { useState } from "react";
+import { ShieldCaptcha } from "@shieldcaptcha/react";
+
+export function SecureRegistrationForm() {
+  const [captchaToken, setCaptchaToken] = useState<string>("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!captchaToken) {
+      alert("Please complete human verification.");
+      return;
+    }
+
+    const res = await fetch("/api/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: "user@example.com",
+        "shield-captcha-token": captchaToken,
+      }),
+    });
+    const result = await res.json();
+    console.log("Registration Result:", result);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <input type="email" placeholder="Your Email" required />
+      <ShieldCaptcha
+        siteKey={process.env.NEXT_PUBLIC_SHIELD_SITE_KEY || "pub_shield_live_9f788949ea051e68d98aa33b"}
+        onVerify={(token) => setCaptchaToken(token)}
+        onError={(err) => console.error("Captcha Error:", err)}
+      />
+      <button type="submit" disabled={!captchaToken}>Register</button>
+    </form>
+  );
+}
+```
+
+### Node.js / Express Server-Side Verification
+```javascript
+import express from "express";
+
+const app = express();
+app.use(express.json());
+
+app.post("/api/register", async (req, res) => {
+  const token = req.body["shield-captcha-token"];
+
+  // Verify token with ShieldCaptcha engine
+  const verifyResponse = await fetch("https://shieldcaptcha.vercel.app/api/siteverify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      secret: process.env.SHIELD_SITE_SECRET,
+      token: token,
+      remoteip: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+    }),
+  });
+
+  const verifyData = await verifyResponse.json();
+
+  if (!verifyData.success) {
+    return res.status(403).json({
+      error: "Human verification failed. Automated bots blocked.",
+      details: verifyData["error-codes"],
+    });
+  }
+
+  // Proceed with registration
+  return res.json({ success: true, message: "Welcome genuine human!" });
+});
+```
+
+### Python FastAPI Server-Side Verification
+```python
+from fastapi import FastAPI, HTTPException, Request
+from pydantic import BaseModel
+import httpx
+import os
+
+app = FastAPI()
+
+SHIELD_SECRET = os.getenv("SHIELD_SITE_SECRET")
+
+class RegisterPayload(BaseModel):
+    email: str
+    shield_captcha_token: str
+
+@app.post("/api/register")
+async def register(payload: RegisterPayload, request: Request):
+    client_ip = request.client.host
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "https://shieldcaptcha.vercel.app/api/siteverify",
+            json={
+                "secret": SHIELD_SECRET,
+                "token": payload.shield_captcha_token,
+                "remoteip": client_ip,
+            },
+            timeout=5.0,
+        )
+        data = response.json()
+
+    if not data.get("success"):
+        raise HTTPException(status_code=403, detail="Bot defense verification rejected")
+
+    return {"status": "success", "user": payload.email}
+```
+
+---
+
+## 5. Frequently Asked Questions (English & Hindi)
+
+### Q: What is ShieldCaptcha and how does it work?
+A: ShieldCaptcha is an open-source, privacy-preserving autonomous bot defense platform and free CAPTCHA alternative. It combines client-side cryptographic Proof-of-Work (PoW) in Web Workers, anti-computer-vision jigsaw puzzles, and biomechanical drag kinematics analysis to distinguish genuine human users from automated bots and scrapers without tracking user browsing habits or dropping tracking cookies.
+
+### Q: Is ShieldCaptcha free to use?
+A: Yes! ShieldCaptcha is 100% free and open-source under the MIT license. You can self-host the core engine using Docker, Node.js, or Python, or use free cloud-hosted embeddable widgets with instant client keys and server verification secrets.
+
+### Q: Shield Captcha kya hota hai aur yeh kaise kaam karta hai? (Meaning in Hindi)
+A: ShieldCaptcha ek aadhunik open-source security tool hai jo websites aur online forms ko automated computer bots, fake spam registrations aur hackers se surakshit (protect) rakhta hai. Yeh visitor ke device par bina kisi pareshani ke ek halka cryptographic Proof-of-Work challenge solve karta hai taaki pata chal sake ki visitor asli insaan hai ya computer bot, bina kisi tracking cookie ke.
+
+### Q: Can automated solvers like 2Captcha, Selenium, or Puppeteer bypass ShieldCaptcha?
+A: No. Headless automation scripts (Selenium, Puppeteer, Playwright) and solver proxies fail because ShieldCaptcha analyzes hardware canvas fingerprints, sub-pixel pointer acceleration derivatives, and natural human micro-tremors that cannot be simulated without rendering authentic human input curves.
+
+### Q: How do I fix "ShieldCaptcha verification failed" or "Captcha token missing"?
+A: Ensure that:
+1. Your frontend `SITE_KEY` corresponds to your backend `SITE_SECRET`.
+2. Your server validates the token within the 300-second expiration window.
+3. Your server reverse proxy forwards the genuine client IP header (`X-Forwarded-For`).
+4. Tokens are validated once and consumed atomically (replaying tokens is strictly prohibited).
+
+---
+
+## 6. Project Metadata & Author Information
+
+- **Project Lead & Security Architect**: Tushar Singh
+- **Official Portfolio**: https://codewithmrsingh.me/
+- **GitHub Profile**: https://github.com/Tusharsinghoffical
+- **GitHub Repository**: https://github.com/Tusharsinghoffical/ShieldCaptcha
+- **License**: MIT

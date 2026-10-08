@@ -28,29 +28,24 @@ export default function robots(): MetadataRoute.Robots {
         allow: "/",
         disallow: [...PRIVATE_PATHS],
       },
-      // 2. AI Retrieval & Citation Bots (Allowed for search discovery, GEO/AEO answers, and citations)
+      // 2. AI Search, Retrieval & Citation Bots (Allowed for full GEO/AEO discoverability)
       {
         userAgent: [
           "OAI-SearchBot",
           "ChatGPT-User",
+          "GPTBot",
           "Claude-SearchBot",
+          "ClaudeBot",
           "PerplexityBot",
           "Applebot",
+          "Applebot-Extended",
           "Bingbot",
+          "Google-Extended",
+          "cohere-ai",
+          "Amazonbot",
         ],
         allow: "/",
         disallow: [...PRIVATE_PATHS],
-      },
-      // 3. AI Training Crawlers (Blocked from unauthorized content scraping & model training per policy)
-      {
-        userAgent: [
-          "GPTBot",
-          "ClaudeBot",
-          "Google-Extended",
-          "Applebot-Extended",
-          "CCBot",
-        ],
-        disallow: "/",
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

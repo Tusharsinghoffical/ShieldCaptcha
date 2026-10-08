@@ -1,33 +1,75 @@
-# ShieldCaptcha
+# ShieldCaptcha Enterprise
 
-> Zero-dependency, multi-modal autonomous bot defense and enterprise Proof-of-Work platform.
+> Open-source, zero-cookie autonomous bot defense and enterprise Proof-of-Work human verification platform. Engineered as a privacy-preserving alternative to Google reCAPTCHA, Cloudflare Turnstile, and hCaptcha.
 
-ShieldCaptcha provides enterprise web applications with client-side Proof-of-Work (PoW) computation, interlocking jigsaw puzzles with computer-vision defense, and biomechanical kinematics trajectory analysis to distinguish human users from automated agents and scrapers.
+- Full Documentation: https://shieldcaptcha.vercel.app/llms-full.txt
+- Official Repository: https://github.com/Tusharsinghoffical/ShieldCaptcha
+- Author: Tushar Singh (https://codewithmrsingh.me/)
+- License: MIT License (Free & Open Source)
 
 ## Core Documentation & Pages
 
-- [Overview](https://shieldcaptcha.vercel.app/): Enterprise bot mitigation overview, architecture highlights, and real-time live defense widget.
-- [Interactive Demo](https://shieldcaptcha.vercel.app/demo): Interactive live demonstration of 1-Click Turnstile verification and magnetic jigsaw puzzles.
-- [Developer Documentation](https://shieldcaptcha.vercel.app/docs): Comprehensive quickstart integration guides, REST API reference, and server verification endpoints.
-- [Security Architecture](https://shieldcaptcha.vercel.app/architecture): Deep technical breakdown of 4-layer defense: SHA-256 Proof-of-Work, AES-CBC-128 encryption, kinematics physics, and telemetry audits.
-- [Integration Hub](https://shieldcaptcha.vercel.app/integration): Framework guides and copy-paste code snippets for React, Next.js, Node.js, Express, and Python FastAPI.
-- [Attack Simulator](https://shieldcaptcha.vercel.app/simulator): Interactive defense lab testing resistance against headless browsers, synthetic click events, and teleportation attacks.
-- [Security Policy & Vulnerability Disclosure](https://shieldcaptcha.vercel.app/security): Cryptographic threat model, security posture, and 90-day responsible vulnerability disclosure policy.
-- [Enterprise Trial](https://shieldcaptcha.vercel.app/trial): Instant onboarding and credential provisioning for development and staging environments.
+- [Overview](https://shieldcaptcha.vercel.app/): Executive summary, live playground, and defense performance metrics.
+- [Interactive Demo](https://shieldcaptcha.vercel.app/demo): Real-time interactive verification testing 1-Click PoW and anti-CV jigsaw puzzles.
+- [Developer Documentation](https://shieldcaptcha.vercel.app/docs): Comprehensive quickstart, REST API reference, and server verification endpoints.
+- [Security Architecture](https://shieldcaptcha.vercel.app/architecture): Detailed breakdown of 4-tier defense: SHA-256 PoW, AES-CBC-128 encryption, kinematics physics, and telemetry audits.
+- [Integration Hub](https://shieldcaptcha.vercel.app/integration): Drop-in SDKs and code samples for React, Next.js, Node.js, Express, Python FastAPI, and HTML.
+- [Attack Simulator](https://shieldcaptcha.vercel.app/simulator): Interactive defense lab testing resistance against Selenium, Puppeteer, synthetic clicks, and teleportation attacks.
+- [Security Policy](https://shieldcaptcha.vercel.app/security): Cryptographic threat model, zero-trust posture, and vulnerability disclosure policy.
+- [Enterprise Trial](https://shieldcaptcha.vercel.app/trial): Instant onboarding and credential provisioning for development environments.
 - [Contact & Support](https://shieldcaptcha.vercel.app/contact): Technical support channels and enterprise inquiries.
-- [Privacy Policy](https://shieldcaptcha.vercel.app/privacy): Zero-cookie, privacy-first data handling compliance and GDPR adherence.
-- [Terms of Service](https://shieldcaptcha.vercel.app/terms): Licensing and terms for self-hosted and cloud-managed ShieldCaptcha deployments.
+- [Privacy Policy](https://shieldcaptcha.vercel.app/privacy): Zero-cookie privacy guarantees, GDPR, CCPA, and India DPDP Act compliance.
+- [Terms of Service](https://shieldcaptcha.vercel.app/terms): Open-source licensing terms for cloud-managed and self-hosted deployments.
 
-## Security & Architectural Guarantees
+## Key Technical Specifications
 
-- **No Third-Party Tracking**: ShieldCaptcha stores zero personal data, sets no persistent tracking cookies, and operates with zero external network dependencies.
-- **Stateless Verification**: Cryptographic HMAC-signed tokens enable instant serverless verification across distributed edge runtimes.
-- **Proof-of-Work Resistance**: SHA-256 difficulty scales dynamically to eliminate automated bot scraping while maintaining sub-second human execution.
+- **Zero Tracking Cookies**: Drops no third-party cookies or session identifiers. 100% compliant with GDPR, CCPA, and India DPDP Act without requiring cookie consent banners.
+- **Client-Side Proof-of-Work (PoW)**: Multi-threaded background Web Worker computes dynamic SHA-256 leading-zero challenges in under 20ms for humans, imposing exponential compute cost on mass scrapers.
+- **Biomechanical Kinematics**: Analyzes mouse and touch pointer trajectory curvature, micro-jitter, and jerk derivatives (Flash & Hogan minimum-jerk model) to distinguish biological humans from automated headless bots.
+- **Single-Use HMAC-SHA256 Token Vault**: Server issues cryptographically signed authorization nonces with atomic replay protection and 300-second expiration.
+- **Self-Hostable Dual Engines**: Run standalone via Docker Compose with zero-dependency Node.js native engine or Python 3.11+ FastAPI engine.
+- **Developer Packages**: Official packages `@shieldcaptcha/core`, `@shieldcaptcha/widget`, `@shieldcaptcha/react` available via npm.
 
-## Free CAPTCHA Alternative & Knowledge Base
+## Quick Integration
 
-- **Free CAPTCHA Service & APIs**: 100% free open-source CAPTCHA alternative to Google reCAPTCHA, hCaptcha, and Cloudflare Turnstile.
-- **Bot & Solver Resistance**: Resists automated headless bots (Selenium, Puppeteer, Playwright), OCR tools, and AI solvers through hardware canvas fingerprinting and micro-jitter drag kinematics.
-- **Framework SDKs**: Official drop-in client components and SDKs for React, Next.js, Vue, Node.js, Express, Python FastAPI, and vanilla HTML/JavaScript.
-- **Self-Hosting**: Zero-dependency Docker container and standalone Node/Python backends with full on-premises data sovereignity.
+### Client-Side (HTML / Vanilla JS)
+```html
+<script src="https://shieldcaptcha.vercel.app/captcha.js" async></script>
+<div id="shield-captcha" data-sitekey="YOUR_SITE_KEY" data-callback="onShieldSuccess"></div>
+<script>
+  function onShieldSuccess(token) {
+    console.log("Verified ShieldCaptcha Token:", token);
+  }
+</script>
+```
 
+### Client-Side (React / Next.js)
+```tsx
+import { ShieldCaptcha } from "@shieldcaptcha/react";
+
+export function LoginForm() {
+  return (
+    <form onSubmit={handleLogin}>
+      <ShieldCaptcha
+        siteKey="YOUR_SITE_KEY"
+        onVerify={(token) => setCaptchaToken(token)}
+      />
+      <button type="submit">Log In</button>
+    </form>
+  );
+}
+```
+
+### Server Verification (Node.js / Express)
+```javascript
+const res = await fetch("https://shieldcaptcha.vercel.app/api/siteverify", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    secret: process.env.SHIELD_SITE_SECRET,
+    token: req.body["shield-captcha-token"],
+  }),
+});
+const data = await res.json();
+if (!data.success) throw new Error("Bot verification failed");
+```

@@ -8,31 +8,34 @@ interface KinematicsOscilloscopeProps {
 }
 
 export function KinematicsOscilloscope({ lastPoint }: KinematicsOscilloscopeProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [tremorHarmonics, setTremorHarmonics] = useState<number>(0);
   const [jerkMode, setJerkMode] = useState<string>("Minimum Jerk Curve");
+  const lastPointRef = useRef(lastPoint);
+  lastPointRef.current = lastPoint;
 
-  useEffect(() => {
+  const renderCanvas = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Handle high DPI
+    // Handle high DPI and auto-detect container dimensions
     const rect = canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
+    const w = rect.width || 320;
+    const h = rect.height || 176;
 
-    const w = rect.width;
-    const h = rect.height;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    ctx.scale(dpr, dpr);
 
     // Draw clean background
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, w, h);
 
-    // Draw light grid
+    // Draw light grid auto-spaced
     ctx.strokeStyle = "#f1f5f9";
     ctx.lineWidth = 1;
     for (let x = 0; x < w; x += 28) {
@@ -48,8 +51,9 @@ export function KinematicsOscilloscope({ lastPoint }: KinematicsOscilloscopeProp
       ctx.stroke();
     }
 
-    if (lastPoint && lastPoint.trail && lastPoint.trail.length > 1) {
-      const pts = lastPoint.trail;
+    const currentPt = lastPointRef.current;
+    if (currentPt && currentPt.trail && currentPt.trail.length > 1) {
+      const pts = currentPt.trail;
 
       // Draw trajectory curve
       ctx.beginPath();
@@ -77,18 +81,39 @@ export function KinematicsOscilloscope({ lastPoint }: KinematicsOscilloscopeProp
       setTremorHarmonics(uniqueY);
       setJerkMode(uniqueY >= 2 ? "Biological Minimum Jerk" : "Linear Machine Script");
     }
+  };
+
+  useEffect(() => {
+    renderCanvas();
   }, [lastPoint]);
 
+  // Auto-detect container resize across mobile, tablet, laptop
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    if (typeof ResizeObserver !== "undefined") {
+      const observer = new ResizeObserver(() => {
+        renderCanvas();
+      });
+      observer.observe(container);
+      return () => observer.disconnect();
+    } else {
+      window.addEventListener("resize", renderCanvas);
+      return () => window.removeEventListener("resize", renderCanvas);
+    }
+  }, []);
+
   return (
-    <div className="flex flex-col gap-3">
-      <div className="relative h-44 rounded-xl overflow-hidden bg-white border border-slate-200 shadow-xs">
+    <div className="flex flex-col gap-3 w-full">
+      <div ref={containerRef} className="relative h-44 w-full rounded-xl overflow-hidden bg-white border border-slate-200 shadow-xs">
         <canvas ref={canvasRef} className="w-full h-full block" />
         <div className="absolute top-2.5 left-3 text-[10px] font-mono font-bold tracking-wider text-slate-500 uppercase bg-white/80 px-2 py-0.5 rounded border border-slate-200/60 backdrop-blur-xs">
-          Real-Time Trajectory & Kinematic Jerk Radar
+          Real-Time Trajectory &amp; Kinematic Jerk Radar
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 text-xs">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
         <div className="bg-white p-2.5 rounded-lg border border-slate-200 shadow-xs">
           <span className="text-[11px] text-slate-500 flex items-center gap-1">
             <Cpu className="w-3 h-3 text-indigo-600" />
@@ -110,7 +135,7 @@ export function KinematicsOscilloscope({ lastPoint }: KinematicsOscilloscopeProp
         <div className="bg-white p-2.5 rounded-lg border border-slate-200 shadow-xs">
           <span className="text-[11px] text-slate-500 flex items-center gap-1">
             <Zap className="w-3 h-3 text-amber-600" />
-            Flash & Hogan Model
+            Flash &amp; Hogan Model
           </span>
           <span className="font-mono font-semibold text-slate-800">{jerkMode}</span>
         </div>
