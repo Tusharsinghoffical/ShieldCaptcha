@@ -243,6 +243,14 @@ export function generateSiteSchema() {
   return [organizationSchema, websiteSchema, softwareSchema, sourceCodeSchema, howToSchema, faqSchema];
 }
 
+export function generateUnifiedSiteSchema() {
+  const schemas = generateSiteSchema();
+  return {
+    "@context": "https://schema.org",
+    "@graph": schemas,
+  };
+}
+
 export function generateBreadcrumbSchema(items: { name: string; path: string }[]) {
   return {
     "@context": "https://schema.org",

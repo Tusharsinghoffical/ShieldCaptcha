@@ -11,7 +11,7 @@ import {
   SITE_DESCRIPTION,
   IS_PRODUCTION,
 } from "@/lib/seo-config";
-import { generateSiteSchema } from "@/lib/seo-schema";
+import { generateUnifiedSiteSchema } from "@/lib/seo-schema";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -139,7 +139,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const schemas = generateSiteSchema();
+  const siteSchema = generateUnifiedSiteSchema();
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
   const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
 
@@ -196,17 +196,15 @@ export default function RootLayout({
 
         {children}
 
-        {/* Structured Data Schemas (JSON-LD) */}
-        {schemas.map((schema, i) => (
-          <script
-            key={`schema-${i}`}
-            type="application/ld+json"
-            suppressHydrationWarning
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify(schema).replace(/</g, "\\u003c"),
-            }}
-          />
-        ))}
+        {/* Structured Data Schema (Unified JSON-LD @graph) */}
+        <script
+          id="schema-org-graph"
+          type="application/ld+json"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(siteSchema).replace(/</g, "\\u003c"),
+          }}
+        />
 
         <Analytics />
         <SpeedInsights />
